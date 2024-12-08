@@ -1,0 +1,507 @@
+.header-text-box {
+  padding: 0 !important;
+}
+
+.category-box {
+  background-color: white;
+}
+
+.slider-item {
+  display: flex !important;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.text-box {
+  align-self: center;
+  padding: 20px;
+}
+
+.top-form {
+  border: 2px solid gray !important;
+  border-radius: 4px !important;
+  min-height: 50px;
+}
+
+.option-bg {
+  padding: 5px 15px;
+  display: flex;
+  flex-direction: row;
+  border-bottom: 1px solid gainsboro;
+}
+
+.option-bg:hover {
+  background-color: #e0f8ff;
+
+  cursor: pointer;
+  color: #ee365a !important;
+}
+
+.next-button:hover {
+  background-color: #ee365a;
+}
+
+.select-outline-style:active,
+.select-outline-style:hover {
+  outline-color: #ee365a;
+  border-color: #ee365a;
+}
+
+.select-outline-stye:focus {
+  outline-color: #ee365a;
+  border-color: #ee365a;
+}
+
+.enquiry-box-container-2 {
+  width: 100%;
+  border: 1px solid #ee365a;
+  padding: 25px;
+  background-color: #f7fdff;
+  padding-top: 20px;
+  border-radius: 5px;
+}
+.enquiry-box {
+  padding: 15px;
+  padding-top: 0px;
+  padding-bottom: 0px;
+  max-width: 450px;
+  min-width: 410px;
+}
+.enquiry-box-image {
+  background-size: cover;
+  min-width: 100%;
+  max-width: 100%;
+  min-height: 100%;
+  max-height: 100%;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.button-container-div {
+  padding-top: 15px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+.campaign-container {
+  width: 70%;
+}
+.each-campaign {
+  max-width: 45%;
+  min-width: 45%;
+  min-height: 320px;
+}
+.each-campaign-container {
+  row-gap: 50px;
+}
+.campaign-name {
+  font-size: 18px;
+}
+@media (max-width: 550px) {
+  .each-campaign {
+    max-width: 100%;
+    min-width: 100%;
+    min-height: 200px;
+  }
+
+  .slider-image-container-div {
+    min-height: 180px !important;
+  }
+
+  .campaign-container {
+    width: 95%;
+  }
+  .each-campaign-container {
+    row-gap: 20px;
+  }
+  .each-campaign-container div span {
+    font-size: 10px;
+  }
+
+  .campaign-name {
+    font-size: 13px !important;
+  }
+}
+@media (max-width: 450px) {
+  .home-slider .home.home45,
+  .center-slider .home.home45 {
+    height: 180px !important;
+  }
+  .slider-image-container-div {
+    min-height: 175px !important;
+  }
+  .home-slider .home.home46,
+  .center-slider .home.home46 {
+    height: 180px !important;
+  }
+  .home-slider .home.home47,
+  .center-slider .home.home47 {
+    height: 180px !important;
+  }
+
+  .category-box
+    .home-page-main-slider
+    .slick-slider
+    .slick-track
+    .slick-slider
+    .slick-list {
+    height: 180px !important;
+  }
+}
+@media (max-width: 400px) {
+  .home-slider .home.home45,
+  .center-slider .home.home45 {
+    height: 160px !important;
+  }
+  .slider-image-container-div {
+    min-height: 170px !important;
+  }
+  .home-slider .home.home46,
+  .center-slider .home.home46 {
+    height: 160px !important;
+  }
+  .home-slider .home.home47,
+  .center-slider .home.home47 {
+    height: 160px !important;
+  }
+
+  .category-box
+    .home-page-main-slider
+    .slick-slider
+    .slick-track
+    .slick-slider
+    .slick-list {
+    height: 160px !important;
+  }
+}
+@media (max-width: 350px) {
+  .home-slider .home.home45,
+  .center-slider .home.home45 {
+    height: 150px !important;
+  }
+  .slider-image-container-div {
+    min-height: 150px !important;
+  }
+  .home-slider .home.home46,
+  .center-slider .home.home46 {
+    height: 150px !important;
+  }
+  .home-slider .home.home47,
+  .center-slider .home.home47 {
+    height: 150px !important;
+  }
+
+  .category-box
+    .home-page-main-slider
+    .slick-slider
+    .slick-track
+    .slick-slider
+    .slick-list {
+    height: 150px !important;
+  }
+}
+
+@media (min-width: 1000px) {
+  .home-slider .home.home45,
+  .center-slider .home.home45 {
+    width: 650px !important;
+    height: 300px !important;
+    border-radius: 5px;
+  }
+  .home-slider .home.home46,
+  .center-slider .home.home46 {
+    width: 650px !important;
+    height: 300px !important;
+    border-radius: 5px;
+  }
+  .home-slider .home.home47,
+  .center-slider .home.home47 {
+    width: 650px !important;
+    height: 300px !important;
+    border-radius: 5px;
+  }
+  .home-page-main-slider {
+    width: 650px !important;
+    height: 250px !important;
+    border-radius: 10px;
+  }
+  .enquiry-box {
+    max-width: 350px !important;
+  }
+
+  .slider-inquiry-bar {
+    margin: auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    /* background-color: rgb(250, 250, 250); */
+    padding: 30px;
+    background-color: #f8f8f8;
+  }
+
+  .enquiry-box-container-2 {
+    display: none;
+  }
+}
+
+@media (max-width: 1000px) {
+  .category-box {
+    display: none;
+  }
+  .enquiry-box-image {
+    display: none;
+  }
+
+  .header-options {
+    display: none;
+  }
+  .user-profile-box {
+    display: none;
+  }
+  .top-searchbar-container-2 {
+    display: flex;
+    max-width: 97%;
+    margin: auto;
+  }
+  .enquiry-box {
+    min-width: 0px !important;
+    max-width: 100% !important;
+  }
+  .how-globalbuybd {
+    font-size: 18px;
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: center !important;
+  }
+
+  .top-searchbar-parent {
+    padding-top: 0px;
+    padding-bottom: 10px;
+    max-width: 98%;
+    margin: 0px auto;
+  }
+
+  .how-globalbuybd-parent {
+    display: flex;
+    flex-direction: column !important;
+  }
+
+  .search-submit-button {
+    min-width: 70px;
+    font-size: 12px;
+  }
+  .form-search2 input {
+    font-size: 13px;
+  }
+}
+
+.onhover-dropdown .profile-info-container-2 {
+  min-width: 800px !important;
+  box-shadow: gray 3px 4px 10px 1px !important;
+  margin-top: 10px;
+  border: 2px solid #ee365a;
+}
+.user-profile-box {
+  padding: 5px;
+}
+.onhover-dropdown-2::before {
+  content: none !important;
+}
+
+.onhover-show-div-2 {
+  top: -83px !important;
+  left: 320px !important;
+}
+
+.onhover-show-div-2 ul li:hover {
+  color: #ee365a !important;
+}
+
+@media (max-width: 700px) {
+  .onhover-dropdown .profile-info-container-2 {
+    right: -70px !important;
+    bottom: 52px !important;
+  }
+  .slider-item {
+    display: flex !important;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .footer-service-slider {
+    width: 90% !important;
+  }
+}
+@media (max-width: 370px) {
+  .onhover-dropdown .profile-info-container-2 {
+    right: -85px !important;
+  }
+}
+@media (max-width: 320px) {
+  .onhover-dropdown .profile-info-container-2 {
+    right: -92px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .enquiry-box-container-2 {
+    width: 100%;
+    padding-top: 25px;
+  }
+  .enquiry-box {
+    padding: 15px;
+    padding-bottom: 20px;
+  }
+
+  .button-container-div {
+    padding-top: 10px;
+  }
+}
+
+@media (max-width: 577px) {
+  header.header-6 .main-menu .brand-logo {
+    padding: 0 !important;
+    top: 10px;
+    left: 0;
+    -webkit-transform: translateX(0);
+    transform: translateX(10%);
+  }
+}
+@media (max-width: 1200px) {
+  .main-menu .menu-left .navbar i {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .brand-logo img {
+    height: 35px;
+  }
+}
+/* @media (min-width: 700px) {
+    .brand-logo img {
+      width: 40%;
+    }
+  } */
+@media (max-width: 577px) {
+  header.header-6 .main-menu .brand-logo {
+    top: 16px;
+  }
+}
+@media (min-width: 577px) {
+  .main-menu .menu-left .navbar {
+    padding: 40px 0px;
+  }
+  .onhover-div.mobile-setting {
+    padding-top: 0px !important;
+    padding-bottom: 0px !important;
+  }
+  .onhover-div.mobile-cart {
+    padding-top: 0px !important;
+    padding-bottom: 0px !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .header-container-left {
+    padding-left: 0px !important;
+  }
+}
+
+@media (min-width: 1000px) {
+  .searchbar-icon-box {
+    background-color: #ee365a;
+    display: flex;
+    border: 1px solid #ee365a;
+    cursor: pointer;
+  }
+
+  .main-menu {
+    justify-content: center !important;
+  }
+}
+
+@media (max-width: 1000px) {
+  .searchbar-icon-box {
+    display: none;
+  }
+}
+@media (max-width: 600px) {
+  .top-searchbar-parent {
+    top: 0;
+    position: sticky;
+    padding-top: 7px;
+    padding-bottom: 7px;
+    z-index: 1000;
+    max-width: 100% !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .track-order-button {
+    padding: 7px;
+    padding-bottom: 10px !important;
+    background-color: rgb(1, 70, 109);
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 10px;
+    margin-top: -33px;
+    margin-right: 35px;
+  }
+  .onhover-div {
+    padding-bottom: 0px !important;
+  }
+}
+
+@media (min-width: 1000px) {
+  .setting-icon-header {
+    display: none;
+  }
+}
+
+.onhover-dropdown {
+  position: relative;
+  font-size: 14px;
+  &:before {
+    content: "\f107";
+    position: absolute;
+    right: 3px;
+  }
+  .onhover-show-div {
+    top: 50px;
+    left: 100;
+    position: absolute;
+    z-index: 1000000;
+    background-color: white;
+    transition: all linear 0.3s;
+    min-width: 160px;
+    text-align: left;
+    -webkit-box-shadow: 0 0 1px 0 #ebebeb;
+    -moz-box-shadow: 0 0 1px 0 #ebebeb;
+    box-shadow: 0 0 1px 0 #ebebeb;
+    transform: translateY(30px);
+    opacity: 0;
+    visibility: hidden;
+
+    padding: 15px 20px;
+    border-radius: 0 !important;
+    &.product-page-full {
+      z-index: 99999;
+    }
+  }
+  &:hover {
+    .onhover-show-div {
+      opacity: 1;
+      transform: translateY(0px);
+      visibility: visible;
+    }
+  }
+}
+
+.sidebar-title {
+  font-weight: bold;
+  font-size: 25px !important;
+  padding: 20px;
+  padding-top: 10px;
+  padding-bottom: 20px !important;
+  padding-left: 0px;
+  border-bottom: 1px solid gainsboro;
+}

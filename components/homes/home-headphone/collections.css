@@ -1,0 +1,26 @@
+.each-box-flex {
+  flex: 1 1 calc(100% / 6 - 10px);
+  max-width: calc(100% / 6 - 10px);
+  min-width: calc(100% / 6 - 10px);
+  box-sizing: border-box;
+  text-align: "center";
+}
+.custom-image-style {
+  max-width: 100px;
+  min-width: 100px;
+  max-height: 90px;
+  min-height: 90px;
+}
+@media (max-width: 650px) {
+  .each-box-flex {
+    flex: 1 1 calc(100% / 3 - 10px);
+    max-width: calc(100% / 3 - 10px);
+    min-width: calc(100% / 3 - 10px);
+    box-sizing: border-box;
+    text-align: "center";
+  }
+  .custom-image-style {
+    max-height: 70px;
+    min-height: 70px;
+  }
+}
