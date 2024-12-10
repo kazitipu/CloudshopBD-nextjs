@@ -14,9 +14,9 @@ class OnHoverCategory extends Component {
         return [];
       }
     };
-    let category = null;
+
     let cat = getAllChildCategories(this.props.cat);
-    console.log(cat);
+
     return (
       <ul
         className="profile-info-container-2 onhover-show-div onhover-show-div-2"
@@ -41,19 +41,21 @@ class OnHoverCategory extends Component {
                     minWidth: 90,
                     maxHeight: 90,
                     maxWidth: 90,
-                    border: "1px solid gray",
+                    border: "2px solid gray",
                     backgroundImage: `url(${category.logo})`,
                     backgroundSize: "contain",
-                    borderRadius: 5,
+                    borderRadius: "50%",
+                    margin: "auto",
                   }}
                 ></div>
                 <div
                   style={{
                     color: "#333",
-
                     whiteSpace: "nowrap",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
+                    textAlign: "center",
+                    textDecoration: "underline",
                   }}
                 >
                   {category.name}

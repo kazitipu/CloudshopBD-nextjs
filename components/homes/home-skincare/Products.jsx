@@ -8,37 +8,9 @@ import Link from "next/link";
 import { Navigation, Pagination } from "swiper/modules";
 import { useEffect, useState } from "react";
 import { connect } from "react-redux";
-import {
-  getAllHomeScreenCategoriesRedux,
-  getAllHomeScreenProductsRedux,
-} from "@/actions";
 import "./products.css";
 
-const Products = ({
-  getAllHomeScreenCategoriesRedux,
-  homeCategories,
-  getAllHomeScreenProductsRedux,
-  homeProducts,
-  first,
-}) => {
-  useEffect(() => {
-    const fetchHomeCategories = async () => {
-      await getAllHomeScreenCategoriesRedux();
-    };
-    fetchHomeCategories();
-  }, []);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (homeCategories && homeCategories.length > 0) {
-        homeCategories.map(async (category) => {
-          await getAllHomeScreenProductsRedux(category.id);
-        });
-      }
-    };
-    fetchData();
-    console.log("get all home products is getting called");
-  }, [homeCategories]);
+const Products = ({ homeCategories, homeProducts, first }) => {
   let firstCategories = [];
   let secondCategories = [];
   if (homeCategories) {
@@ -190,7 +162,7 @@ const Products = ({
         renderableProducts = products.products;
       }
     }
-    console.log(renderableProducts);
+    console.log(homeProducts);
     return (
       <div className="tab-content">
         <div className="tab-pane active show" id="essentials" role="tabpanel">
@@ -385,14 +357,16 @@ const Products = ({
                       {category.name}
                     </a>
                   </div>
-                  <div
-                    style={{
-                      fontWeight: "bold",
-                      textDecoration: "underline",
-                    }}
-                    className="see-all"
-                  >
-                    see all
+                  <div className="see-all">
+                    <Link
+                      style={{
+                        textDecoration: "underline",
+                        fontWeight: "bold",
+                      }}
+                      href={`/shop-default?categoryId=${category.id}`}
+                    >
+                      See all
+                    </Link>
                   </div>
                 </div>
                 {renderProducts(category)}
@@ -405,13 +379,4 @@ const Products = ({
   );
 };
 
-const mapStateToProps = (state) => {
-  return {
-    homeCategories: state.categories.homeCategories,
-    homeProducts: state.categories.homeProducts,
-  };
-};
-export default connect(mapStateToProps, {
-  getAllHomeScreenCategoriesRedux,
-  getAllHomeScreenProductsRedux,
-})(Products);
+export default Products;

@@ -1,37 +1,9 @@
-"use client";
-
-import React, { useEffect } from "react";
-
-import { blogArticles8, categories, imageList } from "@/data/blogs";
+import React from "react";
 import OnHoverCategory from "./onHoverCategory";
 import "./main.css";
-import {
-  getAllHomeScreenCategoriesRedux,
-  getAllTopCategoriesRedux,
-  getAllCategoriesRedux,
-  getAllLatestProductsRedux,
-  getAllHomeScreenBestSellingRedux,
-} from "@/actions";
-import { connect } from "react-redux";
-const Sidebar = ({
-  categories,
-  getAllCategoriesRedux,
-  getAllLatestProductsRedux,
-  latestProducts,
-  getAllHomeScreenBestSellingRedux,
-  bestSelling,
-}) => {
-  useEffect(() => {
-    const fetchData = async () => {
-      await getAllCategoriesRedux(); // Fetch data and dispatch Redux action
-      await getAllLatestProductsRedux();
-      // give the best selling categoryId here
-      await getAllHomeScreenBestSellingRedux("1697451881986");
-      console.log("use effect is getting called!");
-    };
 
-    fetchData(); // Call the async function
-  }, []); // Dependency array ensures this runs only once on mount
+const Sidebar = ({ categories, latestProducts, bestSelling }) => {
+  // Dependency array ensures this runs only once on mount
 
   let mainCategories = [];
   if (categories && categories.length > 0) {
@@ -39,8 +11,6 @@ const Sidebar = ({
       .filter((category) => category.parentCategory == "")
       .filter((cat) => cat.name != "offer");
   }
-
-  console.log(bestSelling);
 
   const getPrice = (product) => {
     if (product.displayedVariations.length > 0) {
@@ -396,17 +366,4 @@ const Sidebar = ({
   );
 };
 
-const mapStateToProps = (state) => {
-  return {
-    categories: state.categories.categories,
-    latestProducts: state.categories.latestProducts,
-    bestSelling: state.categories.bestSelling,
-  };
-};
-export default connect(mapStateToProps, {
-  getAllHomeScreenCategoriesRedux,
-  getAllTopCategoriesRedux,
-  getAllCategoriesRedux,
-  getAllLatestProductsRedux,
-  getAllHomeScreenBestSellingRedux,
-})(Sidebar);
+export default Sidebar;

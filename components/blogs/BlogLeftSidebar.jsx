@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import Sidebar from "./Sidebar";
 import Image from "next/image";
@@ -6,7 +8,6 @@ import { blogArticles6 } from "@/data/blogs";
 import Pagination2 from "../common/Pagination2";
 import Hero from "@/components/homes/home-2/Hero";
 import Products from "@/components/homes/home-skincare/Products";
-
 import Categories from "@/components/homes/home-6/Categories";
 import Brands from "@/components/homes/home-2/Brands";
 import Collections from "../homes/home-headphone/Collections";
@@ -16,49 +17,74 @@ import Banner from "@/components/homes/home-headphone/Banner";
 import Products2 from "@/components/homes/home-6/Products";
 import Collections2 from "@/components/homes/home-headphone/Collections2";
 import Announcmentbar from "../common/Announcmentbar";
-export default function BlogLeftSidebar() {
+
+export default function BlogLeftSidebar({
+  categories,
+  latestProducts,
+  bestSelling,
+  banners,
+  topCategories,
+  campaigns,
+  homeCategories,
+  homeProducts,
+}) {
   return (
     <div className="container">
       <Announcmentbar />
       <div className="row">
         <div className="col-12">
           <div className="blog-sidebar-main" style={{ paddingTop: 10 }}>
-            <Sidebar />
+            <Sidebar
+              categories={categories}
+              latestProducts={latestProducts.productsArray}
+              bestSelling={bestSelling}
+            />
             <div className="list-blog">
-              <Hero />
+              <Hero banners={banners} />
 
               <div style={{ marginTop: 20 }}>
-                <Categories />
+                <Categories topCategories={topCategories} />
               </div>
               <div style={{ marginTop: 20 }}>
-                <Collections2 />
+                <Collections2 campaigns={campaigns} />
               </div>
 
               <div style={{ marginTop: 20 }}>
-                <Products first={true} />
+                <Products
+                  first={true}
+                  homeCategories={homeCategories}
+                  homeProducts={homeProducts}
+                />
               </div>
 
               <div>
                 <Collections />
               </div>
               <div>
-                <Banner />
+                <Banner banners={banners} />
               </div>
               <div style={{ marginTop: 20 }}>
-                <Products />
+                <Products
+                  homeCategories={homeCategories}
+                  homeProducts={homeProducts}
+                />
               </div>
 
-              <Products2 />
+              <Products2 latestProducts={latestProducts.productsArray} />
 
               <ul
                 className="wg-pagination"
                 style={{
-                  marginTop: 20,
                   flexDirection: "row",
                   justifyContent: "center",
+                  textDecoration: "underline",
+                  color: "black",
+                  fontWeight: "bold",
+                  fontSize: 22,
                 }}
               >
-                <Pagination2 />
+                <Link href={`/shop-default?categoryId=latest`}>See all</Link>
+                {/* <Pagination2 /> */}
               </ul>
             </div>
           </div>

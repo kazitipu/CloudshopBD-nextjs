@@ -1,5 +1,5 @@
 "use client";
-import { getAllLatestProductsRedux } from "@/actions";
+
 import { ProductCard } from "@/components/shopCards/ProductCard";
 import Link from "next/link";
 import Image from "next/image";
@@ -137,7 +137,10 @@ const Products = ({ latestProducts }) => {
   };
 
   return (
-    <section className="flat-spacing-8" style={{ paddingTop: 35 }}>
+    <section
+      className="flat-spacing-8"
+      style={{ paddingTop: 35, paddingBottom: 35 }}
+    >
       <div className="container" style={{ paddingLeft: 0, paddingRight: 0 }}>
         <div className="flat-animate-tab">
           <ul
@@ -292,10 +295,6 @@ const Products = ({ latestProducts }) => {
 };
 
 const mapStateToProps = (state) => {
-  return {
-    latestProducts: state.categories.latestProducts,
-  };
+  return {};
 };
-export default connect(mapStateToProps, {
-  getAllLatestProductsRedux,
-})(Products);
+export default connect(mapStateToProps, {})(Products);

@@ -1446,6 +1446,39 @@ export const getAllHomeScreenBestSelling = async (categoryId) => {
     alert(error.message);
   }
 };
+
+export const getSingleCategoryProducts = async (categories, startAfter) => {
+  const productsCollectionRef = collection(firestore, "products");
+  let productsQuery;
+  console.log(startAfter);
+  if (startAfter) {
+    productsQuery = query(
+      productsCollectionRef,
+      where("checkedValues", "array-contains-any", categories),
+      orderBy("id", "desc"),
+      startAfter(startAfter),
+      limit(10)
+    );
+  } else {
+    productsQuery = query(
+      productsCollectionRef,
+      where("checkedValues", "array-contains-any", categories),
+      orderBy("id", "desc"),
+      limit(10)
+    );
+  }
+  const querySnapshot = await getDocs(productsQuery);
+
+  // Get the last document for pagination
+  const lastProduct = querySnapshot.docs[querySnapshot.docs.length - 1];
+
+  // Map through the documents and return the products array
+  const productsArray = querySnapshot.docs.map((doc) => doc.data());
+  console.log(productsArray);
+  console.log(lastProduct);
+  return { productsArray, lastProduct: JSON.stringify(lastProduct) };
+};
+
 export const getAllLatestProducts = async (startAfter) => {
   try {
     const productsCollectionRef = collection(firestore, "products");
@@ -1479,7 +1512,7 @@ export const getAllLatestProducts = async (startAfter) => {
     const productsArray = querySnapshot.docs.map((doc) => doc.data());
     console.log(productsArray);
     console.log(lastProduct);
-    return { productsArray, lastProduct };
+    return { productsArray, lastProduct: JSON.stringify(lastProduct) };
   } catch (error) {
     console.error("Error fetching products:", error);
     alert(error);

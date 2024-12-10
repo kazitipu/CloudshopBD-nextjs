@@ -56,6 +56,7 @@ import {
   getAllHomeScreenProducts,
   getAllLatestProducts,
   getAllHomeScreenBestSelling,
+  getSingleCategoryProducts,
 } from "../firebase/firebase.utils";
 
 export const setAllOrders = (ordersArray) => ({
@@ -523,5 +524,16 @@ export const deleteAttributeTermRedux =
     dispatch({
       type: "DELETE_ATTRIBUTE_TERM",
       payload: { id: termId, parentId },
+    });
+  };
+export const getSingleCategoryProductsRedux =
+  (categories, lastProduct) => async (dispatch) => {
+    const allProducts = await getSingleCategoryProducts(
+      categories,
+      lastProduct
+    );
+    dispatch({
+      type: "GET_ALL_SINGLE_CATEGORY_PRODUCTS",
+      payload: allProducts,
     });
   };

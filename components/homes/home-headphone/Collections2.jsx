@@ -1,19 +1,12 @@
 "use client";
-import React, { useEffect } from "react";
+import React from "react";
 import { recentCollections3 } from "@/data/categories";
 import { Autoplay } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 import Image from "next/image";
 import Link from "next/link";
-import { connect } from "react-redux";
-import { getAllCampaignsRedux } from "@/actions";
-const Collections2 = ({ getAllCampaignsRedux, campaigns }) => {
-  useEffect(() => {
-    const getCampaigns = async () => {
-      await getAllCampaignsRedux();
-    };
-    getCampaigns();
-  }, []);
+
+const Collections2 = ({ campaigns }) => {
   return (
     <section>
       <div className="container" style={{ paddingRight: 0, paddingLeft: 0 }}>
@@ -71,9 +64,5 @@ const Collections2 = ({ getAllCampaignsRedux, campaigns }) => {
     </section>
   );
 };
-const mapStateToProps = (state) => {
-  return {
-    campaigns: state.categories.campaigns,
-  };
-};
-export default connect(mapStateToProps, { getAllCampaignsRedux })(Collections2);
+
+export default Collections2;

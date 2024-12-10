@@ -37,6 +37,7 @@ const store = configureStore({
   // middleware: (getDefaultMiddleware) => getDefaultMiddleware(), // Include default middleware
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
+      immutableCheck: false,
       serializableCheck: false, // Disable if you're sure about non-serializable values
     }),
 });

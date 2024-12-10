@@ -1,21 +1,13 @@
 "use client";
+
 import Image from "next/image";
-import { slidesData } from "@/data/heroslides";
-import React, { useEffect } from "react";
+import React from "react";
 import Link from "next/link";
 import { Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { getAllBannersRedux } from "@/actions";
-import { connect } from "react-redux";
 import "./hero.css";
-const Hero = ({ getAllBannersRedux, banners }) => {
-  useEffect(() => {
-    const fetchBanner = async () => {
-      await getAllBannersRedux();
-    };
-    fetchBanner();
-  }, []);
-  console.log(banners);
+
+const Hero = ({ banners }) => {
   let images = [];
   if (banners && banners.length > 0) {
     images = banners
@@ -92,9 +84,4 @@ const Hero = ({ getAllBannersRedux, banners }) => {
   );
 };
 
-const mapStateToProps = (state) => {
-  return {
-    banners: state.categories.banners,
-  };
-};
-export default connect(mapStateToProps, { getAllBannersRedux })(Hero);
+export default Hero;

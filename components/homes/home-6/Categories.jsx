@@ -6,15 +6,8 @@ import React, { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Navigation } from "swiper/modules";
-import { connect } from "react-redux";
-import { getAllTopCategoriesRedux } from "@/actions";
-const Categories = ({ getAllTopCategoriesRedux, topCategories }) => {
-  useEffect(() => {
-    const fetchCategories = async () => {
-      await getAllTopCategoriesRedux();
-    };
-    fetchCategories();
-  }, []);
+
+const Categories = ({ topCategories }) => {
   return (
     <section
       className="flat-spacing-12"
@@ -29,7 +22,7 @@ const Categories = ({ getAllTopCategoriesRedux, topCategories }) => {
           <h3 className="title" style={{ fontWeight: "bold" }}>
             Top Categories
           </h3>
-          <Link href={`/shop-collection-sub`} className="tf-btn btn-line">
+          <Link href={`/categories`} className="tf-btn btn-line">
             View all categories
             <i className="icon icon-arrow1-top-left" />
           </Link>
@@ -106,11 +99,4 @@ const Categories = ({ getAllTopCategoriesRedux, topCategories }) => {
   );
 };
 
-const mapStateToProps = (state) => {
-  return {
-    topCategories: state.categories.topCategories,
-  };
-};
-export default connect(mapStateToProps, {
-  getAllTopCategoriesRedux,
-})(Categories);
+export default Categories;

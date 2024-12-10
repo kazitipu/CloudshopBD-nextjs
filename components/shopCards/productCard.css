@@ -1,0 +1,10 @@
+.fixed-height {
+  max-height: 170px;
+  min-height: 170px;
+}
+@media (max-width: 350px) {
+  .fixed-height {
+    max-height: 120px;
+    min-height: 120px;
+  }
+}

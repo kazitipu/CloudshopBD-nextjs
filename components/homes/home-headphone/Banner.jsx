@@ -57,10 +57,4 @@ const Banner = ({ banners }) => {
   );
 };
 
-const mapStateToProps = (state) => {
-  return {
-    banners: state.categories.banners,
-  };
-};
-
-export default connect(mapStateToProps, {})(Banner);
+export default Banner;

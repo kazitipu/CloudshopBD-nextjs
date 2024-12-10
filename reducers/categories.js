@@ -35,7 +35,7 @@ const categoriesReducer = (state = INITIAL_STATE, action) => {
         ...state,
         latestProducts: [...action.payload.productsArray],
         // last Product is needed for pagination. and it's giving firestore querySnapShot. which is giving rangeError Maximum call stack size exceeded
-        // lastProduct: action.payload.lastProduct,
+        lastProduct: action.payload.lastProduct,
       };
 
     case "UPLOAD_CATEGORY":

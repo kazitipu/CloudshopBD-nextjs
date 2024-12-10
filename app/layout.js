@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import "../public/scss/main.scss";
 import "../public/icons/icofont/icofont.min.css";
 import "photoswipe/dist/photoswipe.css";
@@ -60,10 +60,16 @@ export default function RootLayout({ children }) {
     };
   }, []); // Empty dependency array means this effect runs once on mount and cleans up on unmount
 
-  const [scrollDirection, setScrollDirection] = useState("down");
+  const [scrollDirection, setScrollDirection] = useState("up");
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
+    // Scroll to the top when navigating to a new route
+    window.scrollTo(0, 0);
+
     setScrollDirection("up");
+    lastScrollY.current = window.scrollY;
+
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
 
@@ -83,8 +89,6 @@ export default function RootLayout({ children }) {
       lastScrollY.current = currentScrollY;
     };
 
-    const lastScrollY = { current: window.scrollY };
-
     // Add scroll event listener
     window.addEventListener("scroll", handleScroll);
 
@@ -93,6 +97,7 @@ export default function RootLayout({ children }) {
       window.removeEventListener("scroll", handleScroll);
     };
   }, [pathname]);
+
   useEffect(() => {
     // Close any open modal
     const bootstrap = require("bootstrap"); // dynamically import bootstrap
