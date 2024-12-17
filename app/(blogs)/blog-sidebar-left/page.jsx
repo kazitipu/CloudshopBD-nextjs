@@ -20,7 +20,11 @@ export const metadata = {
 export default async function page() {
   const categories = await getAllCategories();
   const latestProducts = await getAllLatestProducts();
-  const bestSelling = await getAllHomeScreenBestSelling("1697451881986");
+  let category = categories.find((cat) => cat.name === "Top selling");
+  let bestSelling;
+  if (category) {
+    bestSelling = await getAllHomeScreenBestSelling(category.id);
+  }
   const banners = await getAllBanners();
   const topCategories = await getAllTopCategories();
   const campaigns = await getAllCampaigns();
@@ -41,6 +45,7 @@ export default async function page() {
         categories={categories}
         latestProducts={latestProducts}
         bestSelling={bestSelling}
+        bestSellingCategory={category}
         banners={banners}
         topCategories={topCategories}
         campaigns={campaigns}

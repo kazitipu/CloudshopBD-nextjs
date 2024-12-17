@@ -1,8 +1,14 @@
 import React from "react";
 import OnHoverCategory from "./onHoverCategory";
 import "./main.css";
+import Link from "next/link";
 
-const Sidebar = ({ categories, latestProducts, bestSelling }) => {
+const Sidebar = ({
+  categories,
+  latestProducts,
+  bestSelling,
+  bestSellingCategory,
+}) => {
   // Dependency array ensures this runs only once on mount
 
   let mainCategories = [];
@@ -16,88 +22,126 @@ const Sidebar = ({ categories, latestProducts, bestSelling }) => {
     if (product.displayedVariations.length > 0) {
       if (product.displayedVariations[0].salePrice == 0) {
         return (
-          <>
-            <div>৳{product.displayedVariations[0].price}</div>
-            <div
-              style={{
-                flex: 0.5,
-                flexDirection: "column",
-                alignItems: "flex-end",
-              }}
-            >
-              <div>৳0</div>
-              <div>
-                <div>0% Off</div>
-              </div>
+          <div>
+            <div style={{ textAlign: "left", color: "white", fontSize: 11 }}>
+              ৳0
             </div>
-          </>
+            <div
+              style={{ textAlign: "left", fontWeight: "bold", marginTop: -5 }}
+            >
+              ৳{product.displayedVariations[0].price}
+            </div>
+          </div>
         );
       } else {
         return (
-          <>
-            <div>৳{product.displayedVariations[0].salePrice}</div>
+          <div>
+            <div style={{ textAlign: "left", color: "#999", fontSize: 11 }}>
+              <del>৳{product.displayedVariations[0].price}</del>
+            </div>
+            <div
+              style={{ textAlign: "left", fontWeight: "bold", marginTop: -5 }}
+            >
+              ৳{product.displayedVariations[0].salePrice}
+            </div>
+
             <div
               style={{
-                flex: 0.5,
-                flexDirection: "column",
-                alignItems: "flex-end",
+                position: "absolute",
+                top: 0,
+                left: 10,
+                height: 30,
+                width: 30,
+                backgroundImage: "url(/images/offer.svg)",
+                zIndex: 100,
               }}
             >
-              <div>৳{product.displayedVariations[0].price}</div>
-              <div>
-                <div>
-                  {parseInt(
-                    100 -
-                      (product.displayedVariations[0].salePrice /
-                        product.displayedVariations[0].price) *
-                        100
-                  )}
-                  % Off
-                </div>
+              <div
+                style={{
+                  color: "white",
+                  fontSize: 9,
+                  marginTop: -2,
+                }}
+              >
+                {parseInt(
+                  100 -
+                    (product.displayedVariations[0].salePrice /
+                      product.displayedVariations[0].price) *
+                      100
+                )}
+                %
+              </div>
+              <div
+                style={{
+                  color: "white",
+                  fontSize: 9,
+                  marginTop: -12,
+                }}
+              >
+                Off
               </div>
             </div>
-          </>
+          </div>
         );
       }
     } else {
       if (product.salePrice == 0) {
         return (
-          <>
-            <div>৳{product.price}</div>
-            <div
-              style={{
-                flex: 0.5,
-                flexDirection: "column",
-                alignItems: "flex-end",
-              }}
-            >
-              <div>৳{product.price}</div>
-              <div>
-                <div>0% Off</div>
-              </div>
+          <div>
+            <div style={{ textAlign: "left", color: "white", fontSize: 11 }}>
+              ৳{product.price}
             </div>
-          </>
+
+            <div
+              style={{ textAlign: "left", fontWeight: "bold", marginTop: -5 }}
+            >
+              ৳{product.price}
+            </div>
+          </div>
         );
       } else {
         return (
-          <>
-            <div>৳{product.salePrice}</div>
+          <div>
+            <div style={{ textAlign: "left", color: "#999", fontSize: 11 }}>
+              <del>৳{product.price}</del>
+            </div>
+            <div
+              style={{ textAlign: "left", fontWeight: "bold", marginTop: -5 }}
+            >
+              ৳{product.salePrice}
+            </div>
+
             <div
               style={{
-                flex: 0.5,
-                flexDirection: "column",
-                alignItems: "flex-end",
+                position: "absolute",
+                top: 0,
+                left: 10,
+                height: 30,
+                width: 30,
+                backgroundImage: "url(/images/offer.svg)",
+                zIndex: 100,
               }}
             >
-              <div>৳{product.price}</div>
-              <div>
-                <div>
-                  {parseInt(100 - (product.salePrice / product.price) * 100)}%
-                  Off
-                </div>
+              <div
+                style={{
+                  color: "white",
+                  fontSize: 9,
+                  marginTop: -2,
+                }}
+              >
+                {parseInt(100 - (product.salePrice / product.price) * 100)}%
+              </div>
+              <div
+                style={{
+                  color: "white",
+                  fontSize: 9,
+                  marginTop: -12,
+                }}
+              >
+                Off
               </div>
             </div>
-          </>
+          </div>
         );
       }
     }
@@ -213,8 +257,19 @@ const Sidebar = ({ categories, latestProducts, bestSelling }) => {
                     ></div>
 
                     <div className="article-content">
-                      <div style={{ fontWeight: "bold" }}>
-                        {product.name.slice(0, 15)}
+                      <div
+                        style={{
+                          fontWeight: "bold",
+                          overflow: "hidden",
+                          display: "-webkit-box",
+                          WebkitBoxOrient: "vertical",
+                          WebkitLineClamp: 2,
+                          lineHeight: "1.5em",
+                          height: "3em", // 2 lines * line height
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {product.name}
                       </div>
                       <div>{getPrice(product)}</div>
                     </div>
@@ -227,13 +282,19 @@ const Sidebar = ({ categories, latestProducts, bestSelling }) => {
                   flexDirection: "row",
                   justifyContent: "flex-end",
                   paddingRight: 12,
-                  fontWeight: "bold",
-                  textDecoration: "underline",
-                  cursor: "pointer",
-                  color: "#ee365a",
                 }}
               >
-                view all
+                <Link
+                  style={{
+                    fontWeight: "bold",
+                    textDecoration: "underline",
+                    cursor: "pointer",
+                    color: "#ee365a",
+                  }}
+                  href={`/shop-default?categoryId=latest`}
+                >
+                  view all
+                </Link>
               </div>
             </ul>
           )}
@@ -255,7 +316,7 @@ const Sidebar = ({ categories, latestProducts, bestSelling }) => {
             fontWeight: "bold",
           }}
         >
-          Best Selling
+          {bestSellingCategory.name}
         </div>
         <div className="sidebar-content">
           {bestSelling && bestSelling.length > 0 && (
@@ -283,8 +344,19 @@ const Sidebar = ({ categories, latestProducts, bestSelling }) => {
                     ></div>
 
                     <div className="article-content">
-                      <div style={{ fontWeight: "bold" }}>
-                        {product.name.slice(0, 15)}
+                      <div
+                        style={{
+                          fontWeight: "bold",
+                          overflow: "hidden",
+                          display: "-webkit-box",
+                          WebkitBoxOrient: "vertical",
+                          WebkitLineClamp: 2,
+                          lineHeight: "1.5em",
+                          height: "3em", // 2 lines * line height
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {product.name}
                       </div>
                       <div>{getPrice(product)}</div>
                     </div>
@@ -297,13 +369,19 @@ const Sidebar = ({ categories, latestProducts, bestSelling }) => {
                   flexDirection: "row",
                   justifyContent: "flex-end",
                   paddingRight: 12,
-                  fontWeight: "bold",
-                  textDecoration: "underline",
-                  cursor: "pointer",
-                  color: "#ee365a",
                 }}
               >
-                view all
+                <Link
+                  style={{
+                    fontWeight: "bold",
+                    textDecoration: "underline",
+                    cursor: "pointer",
+                    color: "#ee365a",
+                  }}
+                  href={`/shop-default?categoryId=${bestSellingCategory.id}`}
+                >
+                  view all
+                </Link>
               </div>
             </ul>
           )}

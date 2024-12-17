@@ -56,6 +56,7 @@ import {
   getAllHomeScreenProducts,
   getAllLatestProducts,
   getAllHomeScreenBestSelling,
+  getAllBestSelling,
   getSingleCategoryProducts,
 } from "../firebase/firebase.utils";
 
@@ -150,7 +151,12 @@ export const updateShipmentRequestRedux = (requestObj) => async (dispatch) => {
   const updatedRequest = await updateShipmentRequest(requestObj);
   dispatch({ type: "UPDATE_SHIPMENT_REQUEST", payload: updatedRequest });
 };
-
+export const setFreeShippingRedux = (value) => async (dispatch) => {
+  dispatch({
+    type: "SET_FREE_SHIPPING",
+    payload: value,
+  });
+};
 export const getAllPaymentRequestRedux = () => async (dispatch) => {
   const paymentRequestArray = await getAllPaymentRequest();
   dispatch({ type: "GET_ALL_PAYMENT_REQUEST", payload: paymentRequestArray });
@@ -344,6 +350,13 @@ export const getAllHomeScreenBestSellingRedux =
       payload: { categoryId: categoryId, products: allProducts },
     });
   };
+export const getAllBestSellingRedux = (categoryId) => async (dispatch) => {
+  const allProducts = await getAllBestSelling(categoryId);
+  dispatch({
+    type: "GET_ALL_BEST_SELLING",
+    payload: { categoryId: categoryId, products: allProducts },
+  });
+};
 
 export const uploadCategoryRedux =
   (categoryObj, homeCategoriesLength) => async (dispatch) => {

@@ -27,6 +27,7 @@ export default function BlogLeftSidebar({
   campaigns,
   homeCategories,
   homeProducts,
+  bestSellingCategory,
 }) {
   return (
     <div className="container">
@@ -38,6 +39,7 @@ export default function BlogLeftSidebar({
               categories={categories}
               latestProducts={latestProducts.productsArray}
               bestSelling={bestSelling}
+              bestSellingCategory={bestSellingCategory}
             />
             <div className="list-blog">
               <Hero banners={banners} />

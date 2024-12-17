@@ -8,12 +8,14 @@ import {
   sizeOptions,
 } from "@/data/singleProductOptions";
 import StickyItem from "./StickyItem";
-
+import { useRouter } from "next/navigation";
 import Quantity from "./Quantity";
-
+import CountdownComponent from "@/components/common/Countdown";
 import Slider1ZoomOuter from "./sliders/Slider1ZoomOuter";
 import { useContextElement } from "@/context/Context";
-export default function Details16({ product }) {
+import { connect } from "react-redux";
+const Details16 = ({ product, freeShipping }) => {
+  const router = useRouter();
   const [currentColor, setCurrentColor] = useState(colorOptions2[0]);
   const [currentSize, setCurrentSize] = useState(sizeOptions[0]);
   const [quantity, setQuantity] = useState(1);
@@ -25,6 +27,226 @@ export default function Details16({ product }) {
       setCurrentColor(updatedColor);
     }
   };
+  const getStar = (product) => {
+    if (product.reviews && product.reviews.length > 0) {
+      let averageStar = 0;
+      product.reviews.map((review) => {
+        averageStar += parseInt(review.star);
+      });
+      return averageStar / product.reviews.length;
+    } else {
+      return 0;
+    }
+  };
+
+  const getVariation = (obj) => {
+    const { product } = props;
+    let selectedVariation = {};
+    if (product && product.id && product.displayedVariations.length > 0) {
+      product.displayedVariations.map((vari) => {
+        let combinationIdArray = vari.combination.map((combination) => {
+          return combination.id;
+        });
+        let ids = [];
+        for (var key of Object.keys(obj)) {
+          ids.push(obj[key].id);
+        }
+
+        if (combinationIdArray.sort().join(",") === ids.sort().join(",")) {
+          selectedVariation = vari;
+        }
+      });
+    }
+    return selectedVariation;
+  };
+
+  const getPrice = (product) => {
+    if (product.displayedVariations.length > 0) {
+      if (product.displayedVariations[0].salePrice == 0) {
+        return (
+          <div>
+            <div style={{ textAlign: "left", color: "white", fontSize: 11 }}>
+              ৳0
+            </div>
+            <div
+              style={{ textAlign: "left", fontWeight: "bold", marginTop: -5 }}
+            >
+              ৳{product.displayedVariations[0].price}
+            </div>
+          </div>
+        );
+      } else {
+        return (
+          <div>
+            <div
+              style={{ textAlign: "left", fontWeight: "bold", fontSize: 23 }}
+            >
+              ৳{product.displayedVariations[0].salePrice}
+            </div>
+            <div
+              style={{
+                textAlign: "left",
+                color: "#999",
+                fontSize: 15,
+              }}
+            >
+              <del>৳{product.displayedVariations[0].price}</del>
+            </div>
+
+            <div
+              style={{
+                height: 30,
+                width: 30,
+                backgroundImage: "url(/images/offer.svg)",
+                zIndex: 100,
+                marginTop: 5,
+              }}
+            >
+              <div
+                style={{
+                  color: "white",
+                  fontSize: 11,
+                  textAlign: "center",
+                }}
+              >
+                {parseInt(
+                  100 -
+                    (product.displayedVariations[0].salePrice /
+                      product.displayedVariations[0].price) *
+                      100
+                )}
+                %
+              </div>
+              <div
+                style={{
+                  color: "white",
+                  fontSize: 11,
+                  marginTop: -12,
+                  textAlign: "center",
+                }}
+              >
+                Off
+              </div>
+            </div>
+          </div>
+        );
+      }
+    } else {
+      if (product.salePrice == 0) {
+        return (
+          <div>
+            <div style={{ textAlign: "left", color: "white", fontSize: 11 }}>
+              ৳{product.price}
+            </div>
+
+            <div
+              style={{ textAlign: "left", fontWeight: "bold", marginTop: -5 }}
+            >
+              ৳{product.price}
+            </div>
+          </div>
+        );
+      } else {
+        return (
+          <div>
+            <div
+              style={{ textAlign: "left", fontWeight: "bold", fontSize: 23 }}
+            >
+              ৳{product.salePrice}
+            </div>
+            <div
+              style={{
+                textAlign: "left",
+                color: "#999",
+                fontSize: 15,
+              }}
+            >
+              <del>৳{product.price}</del>
+            </div>
+            <div
+              style={{
+                height: 30,
+                width: 30,
+                backgroundImage: "url(/images/offer.svg)",
+                zIndex: 100,
+                marginTop: 5,
+              }}
+            >
+              <div
+                style={{
+                  color: "white",
+                  fontSize: 11,
+                  textAlign: "center",
+                }}
+              >
+                {parseInt(100 - (product.salePrice / product.price) * 100)}%
+              </div>
+              <div
+                style={{
+                  color: "white",
+                  fontSize: 11,
+                  marginTop: -12,
+                  textAlign: "center",
+                }}
+              >
+                Off
+              </div>
+            </div>
+          </div>
+        );
+      }
+    }
+  };
+
+  const getTimeRemaining = () => {
+    const date = new Date();
+    const endtime = `${date.toLocaleString("default", {
+      month: "long",
+    })} ${date.getDate()} ${date.getFullYear()} 23:59:59 GMT+0600`;
+
+    const total = Date.parse(endtime) - Date.parse(new Date());
+    const seconds = Math.floor((total / 1000) % 60);
+    const minutes = Math.floor((total / 1000 / 60) % 60);
+    const hours = Math.floor((total / (1000 * 60 * 60)) % 24);
+    const days = Math.floor(total / (1000 * 60 * 60 * 24));
+    return (
+      <div
+        style={{
+          color: "#292929",
+
+          fontSize: 14,
+        }}
+      >
+        <i
+          class="icofont-delivery-time"
+          style={{ fontWeight: "bold", marginRight: 7, fontSize: 18 }}
+        ></i>
+        Order in The Next{" "}
+        <span
+          style={{
+            textDecorationLine: "underline",
+            color: "#ff8084",
+            fontWeight: "bold",
+            fontSize: 14,
+          }}
+        >
+          {hours ? hours : "6"} hours {minutes ? minutes : "00"} minutes
+        </span>{" "}
+        to get it by{" "}
+        <span
+          style={{
+            fontWeight: "bold",
+            fontSize: 14,
+          }}
+        >
+          {date.toLocaleString("default", { month: "long" })}{" "}
+          {date.getDate() + 2}, {date.getFullYear()}
+        </span>
+        .
+      </div>
+    );
+  };
+
   const {
     addProductToCart,
     isAddedToCartProducts,
@@ -47,7 +269,8 @@ export default function Details16({ product }) {
                   <Slider1ZoomOuter
                     handleColor={handleColor}
                     currentColor={currentColor.value}
-                    firstImage={product.imgSrc}
+                    firstImage={product.pictures[0]}
+                    product={product}
                   />
                 </div>
               </div>
@@ -57,24 +280,152 @@ export default function Details16({ product }) {
                 <div className="tf-zoom-main" />
                 <div className="tf-product-info-list other-image-zoom">
                   <div className="tf-product-info-title">
-                    <h5>
-                      {product.title ? product.title : "Cotton jersey top"}
-                    </h5>
+                    <h5>{product.name}</h5>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <div
+                        style={{
+                          color:
+                            product.stockStatus == "In stock"
+                              ? "#5ddb79"
+                              : "#fe151b",
+                        }}
+                      >
+                        {product.stockStatus}
+                      </div>
+                      <div>
+                        <div className="rating">
+                          <i
+                            className="icon-start"
+                            style={{
+                              color:
+                                getStar(product) > 0 ? "orange" : "gainsboro",
+                            }}
+                          />
+                          <i
+                            className="icon-start"
+                            style={{
+                              color:
+                                getStar(product) > 1 ? "orange" : "gainsboro",
+                            }}
+                          />
+                          <i
+                            className="icon-start"
+                            style={{
+                              color:
+                                getStar(product) > 2 ? "orange" : "gainsboro",
+                            }}
+                          />
+                          <i
+                            className="icon-start"
+                            style={{
+                              color:
+                                getStar(product) > 3 ? "orange" : "gainsboro",
+                            }}
+                          />
+                          <i
+                            className="icon-start"
+                            style={{
+                              color:
+                                getStar(product) > 4 ? "orange" : "gainsboro",
+                            }}
+                          />
+                        </div>
+                        <div>
+                          <div
+                            style={{
+                              textAlign: "center",
+                              color: "gray",
+                              fontSize: 12,
+                            }}
+                          >
+                            ({product.reviews ? product.reviews.length : 0}{" "}
+                            Reviews)
+                          </div>
+                          {/* <div
+                            style={{
+                              color: "gray",
+                              fontSize: 12,
+                              textAlign: "center",
+                              marginTop: 20,
+                            }}
+                          >
+                            Total Sold:
+                            {product.totalSold ? product.totalSold : 0}
+                          </div>
+                          <div
+                            style={{
+                              color: "gray",
+                              fontSize: 12,
+                              textAlign: "center",
+                            }}
+                          >
+                            Wishlist:{product.wishlist ? product.wishlist : 0}
+                          </div> */}
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="tf-product-info-price">
-                    <div className="price-on-sale">
-                      ${product.price.toFixed(2)}
-                    </div>
-                    <div className="compare-at-price">
-                      ${currentColor.oldPrice.toFixed(2)}
-                    </div>
-                    <div className="badges-on-sale">
-                      <span>20</span>% OFF
-                    </div>
+
+                  <div
+                    className="tf-product-info-price"
+                    style={{ marginTop: -20 }}
+                  >
+                    {getPrice(product)}
                   </div>
-                  <div className="tf-product-info-liveview">
-                    <div className="liveview-count">20</div>
-                    <p className="fw-6">People are viewing this right now</p>
+
+                  {product.selectedBrands &&
+                  product.selectedBrands.length > 0 ? (
+                    <div
+                      style={{
+                        color: "#ff8084",
+                        fontWeight: "bold",
+                        textDecoration: "underline",
+                      }}
+                      onClick={() => {
+                        router.push();
+                      }}
+                    >
+                      {product.selectedBrands && product.selectedBrands[0].name}
+                    </div>
+                  ) : null}
+                  <div style={{ marginBottom: 7 }}>{getTimeRemaining()}</div>
+                  <div>
+                    <div>
+                      <i
+                        class="icofont-gift"
+                        style={{
+                          fontWeight: "bold",
+                          marginRight: 7,
+                          fontSize: 18,
+                        }}
+                      ></i>
+
+                      <span
+                        style={{
+                          color: "#292929",
+                          fontSize: 14,
+                        }}
+                      >
+                        Spend{" "}
+                        <span
+                          style={{
+                            color: "#ff8084",
+                            fontWeight: "bold",
+                            textDecorationLine: "underline",
+                            fontSize: 14,
+                          }}
+                        >
+                          Tk {freeShipping}{" "}
+                        </span>
+                        to get Free Delivery.
+                      </span>
+                    </div>
                   </div>
                   <div className="tf-product-info-variant-picker">
                     <div className="variant-picker-item">
@@ -342,4 +693,11 @@ export default function Details16({ product }) {
       <StickyItem />
     </section>
   );
-}
+};
+
+const mapStateToProps = (state) => {
+  return {
+    freeShipping: state.cart.freeShipping,
+  };
+};
+export default connect(mapStateToProps, {})(Details16);

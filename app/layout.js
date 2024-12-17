@@ -32,7 +32,10 @@ import ScrollTop from "@/components/common/ScrollTop";
 import RtlToggle from "@/components/common/RtlToggle";
 import store from "@/store";
 import { Provider } from "react-redux";
-export default function RootLayout({ children }) {
+import { getFreeShipping } from "@/firebase/firebase.utils";
+import { setFreeShippingRedux } from "@/actions";
+
+const RootLayout = ({ children }) => {
   const pathname = usePathname();
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -53,7 +56,11 @@ export default function RootLayout({ children }) {
     };
 
     window.addEventListener("scroll", handleScroll);
-
+    let getFreeship = async () => {
+      let data = await getFreeShipping();
+      store.dispatch(setFreeShippingRedux(data.value));
+    };
+    getFreeship();
     // Cleanup function to remove event listener on component unmount
     return () => {
       window.removeEventListener("scroll", handleScroll);
@@ -196,4 +203,6 @@ export default function RootLayout({ children }) {
       </body>
     </html>
   );
-}
+};
+
+export default RootLayout;

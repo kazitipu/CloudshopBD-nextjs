@@ -10,161 +10,27 @@ export default function Slider1ZoomOuter({
   currentColor = "Beige",
   handleColor = () => {},
   firstImage,
+  product,
 }) {
-  const images = [
-    {
-      id: 1,
-      src: firstImage || "/images/shop/products/p-d1.png",
-      alt: "",
-      width: 770,
-      height: 1075,
-      dataValue: "beige",
-    },
-    {
-      id: 2,
-      src: "/images/shop/products/hmgoepprod.jpg",
-      alt: "",
-      width: 713,
-      height: 1070,
-      dataValue: "beige",
-    },
-    {
-      id: 3,
-      src: "/images/shop/products/hmgoepprod2.jpg",
-      alt: "img-compare",
-      width: 713,
-      height: 1070,
-      dataValue: "beige",
-    },
-    {
-      id: 4,
-      src: "/images/shop/products/hmgoepprod3.jpg",
-      alt: "img-compare",
-      width: 713,
-      height: 1070,
-      dataValue: "beige",
-    },
-    {
-      id: 5,
-      src: "/images/shop/products/hmgoepprod4.jpg",
-      alt: "img-compare",
-      width: 768,
-      height: 1152,
-      dataValue: "beige",
-    },
-    {
-      id: 6,
-      src: "/images/shop/products/hmgoepprod5.jpg",
-      alt: "img-compare",
-      width: 713,
-      height: 1070,
-      dataValue: "beige",
-    },
-    {
-      id: 7,
-      src: "/images/shop/products/hmgoepprod6.jpg",
-      alt: "",
-      width: 768,
-      height: 1152,
-      dataValue: "black",
-    },
-    {
-      id: 8,
-      src: "/images/shop/products/hmgoepprod7.jpg",
-      alt: "",
-      width: 713,
-      height: 1070,
-      dataValue: "black",
-    },
-    {
-      id: 9,
-      src: "/images/shop/products/hmgoepprod8.jpg",
-      alt: "",
-      width: 713,
-      height: 1070,
-      dataValue: "black",
-    },
-    {
-      id: 10,
-      src: "/images/shop/products/hmgoepprod9.jpg",
-      alt: "",
-      width: 768,
-      height: 1152,
-      dataValue: "black",
-    },
-    {
-      id: 11,
-      src: "/images/shop/products/hmgoepprod10.jpg",
-      alt: "",
-      width: 713,
-      height: 1070,
-      dataValue: "blue",
-    },
-    {
-      id: 12,
-      src: "/images/shop/products/hmgoepprod11.jpg",
-      alt: "",
-      width: 713,
-      height: 1070,
-      dataValue: "blue",
-    },
-    {
-      id: 13,
-      src: "/images/shop/products/hmgoepprod12.jpg",
-      alt: "",
-      width: 768,
-      height: 1152,
-      dataValue: "blue",
-    },
-    {
-      id: 14,
-      src: "/images/shop/products/hmgoepprod13.jpg",
-      alt: "",
-      width: 768,
-      height: 1152,
-      dataValue: "blue",
-    },
-    {
-      id: 15,
-      src: "/images/shop/products/hmgoepprod14.jpg",
-      alt: "",
-      width: 768,
-      height: 1152,
-      dataValue: "white",
-    },
-    {
-      id: 16,
-      src: "/images/shop/products/hmgoepprod15.jpg",
-      alt: "",
-      width: 768,
-      height: 1152,
-      dataValue: "white",
-    },
-    {
-      id: 17,
-      src: "/images/shop/products/hmgoepprod16.jpg",
-      alt: "",
-      width: 768,
-      height: 1152,
-      dataValue: "white",
-    },
-    {
-      id: 18,
-      src: "/images/shop/products/hmgoepprod17.jpg",
-      alt: "",
-      width: 768,
-      height: 1152,
-      dataValue: "white",
-    },
-  ];
+  let images = [];
+  if (product && product.id) {
+    if (product.pictures.length > 0 && product.pictures2.length > 0) {
+      const filteredPictures2 = product.pictures2.filter(
+        (pic) => pic !== "/static/media/addProduct.3dff302b.png"
+      );
+      images = [...product.pictures, ...filteredPictures2];
+    } else {
+      images = [...product.pictures];
+    }
+  }
 
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
   const swiperRef = useRef(null);
   useEffect(() => {
-    const slideIndex =
-      images.filter(
-        (elm) => elm.dataValue.toLowerCase() == currentColor.toLowerCase()
-      )[0]?.id - 1;
+    const slideIndex = 1;
+    // images.filter(
+    //   (elm) => elm.dataValue.toLowerCase() == currentColor.toLowerCase()
+    // )[0]?.id - 1;
     swiperRef.current.slideTo(slideIndex);
   }, [currentColor]);
   useEffect(() => {
@@ -239,11 +105,11 @@ export default function Slider1ZoomOuter({
             <div className="item">
               <Image
                 className="lazyload"
-                data-src={slide.src}
+                data-src={slide}
                 alt={""}
-                src={slide.src} // Optional fallback for non-lazy loading
-                width={slide.width}
-                height={slide.height}
+                src={slide} // Optional fallback for non-lazy loading
+                width={300}
+                height={400}
               />
             </div>
           </SwiperSlide>
@@ -264,34 +130,29 @@ export default function Slider1ZoomOuter({
           thumbs={{ swiper: thumbsSwiper }}
           modules={[Thumbs, Navigation]}
           onSwiper={(swiper) => (swiperRef.current = swiper)}
-          onSlideChange={(swiper) => {
-            handleColor(images[swiper.activeIndex].dataValue);
-          }}
+          // onSlideChange={(swiper) => {
+          //   handleColor(images[swiper.activeIndex].dataValue);
+          // }}
         >
           {images.map((slide, index) => (
             <SwiperSlide key={index}>
-              <Item
-                original={slide.src}
-                thumbnail={slide.src}
-                width={slide.width}
-                height={slide.height}
-              >
+              <Item original={slide} thumbnail={slide} width={650} height={750}>
                 {({ ref, open }) => (
                   <a
                     className="item"
-                    data-pswp-width={slide.width}
-                    data-pswp-height={slide.height}
+                    data-pswp-width={100}
+                    data-pswp-height={200}
                     onClick={open}
                   >
                     <Image
                       className="tf-image-zoom lazyload"
-                      data-zoom={slide.src}
-                      data-src={slide.src}
+                      data-zoom={slide}
+                      data-src={slide}
                       ref={ref}
                       alt="image"
-                      width={slide.width}
-                      height={slide.height}
-                      src={slide.src} // Optional fallback for non-lazy loading
+                      width={100}
+                      height={200}
+                      src={slide} // Optional fallback for non-lazy loading
                     />
                   </a>
                 )}

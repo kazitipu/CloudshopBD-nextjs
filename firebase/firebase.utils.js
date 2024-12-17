@@ -328,23 +328,37 @@ export const getSingleProductTax = async (id) => {
   }
 };
 export const getFreeShipping = async () => {
-  const productRef = firestore.doc(`freeShipping/freeShipping`);
+  const productRef = doc(firestore, "freeShipping/freeShipping");
   try {
-    const product = await productRef.get();
-    return product.data();
+    const productSnap = await getDoc(productRef); // Fetch the document
+    if (productSnap.exists()) {
+      return productSnap.data(); // Return document data
+    } else {
+      console.log("No such document exists!");
+      return null;
+    }
   } catch (error) {
-    alert(error);
+    console.error("Error fetching freeShipping document:", error);
+    throw error; // Throw the error for further handling
   }
 };
+
 export const getSingleProduct = async (id) => {
-  const productRef = firestore.doc(`products/${id}`);
+  const productRef = doc(firestore, `products/${id}`);
   try {
-    const product = await productRef.get();
-    return product.data();
+    const productSnap = await getDoc(productRef);
+    if (productSnap.exists()) {
+      return productSnap.data();
+    } else {
+      console.error("No such document!");
+      return null;
+    }
   } catch (error) {
-    alert(error);
+    console.error("Error fetching product:", error);
+    throw error; // Optionally rethrow the error
   }
 };
+
 export const getDisplayedVariation = async (id) => {
   const productRef = firestore.doc(`variations/${id}`);
   try {
@@ -1431,6 +1445,28 @@ export const getAllHomeScreenBestSelling = async (categoryId) => {
     where("checkedValues", "array-contains", categoryId),
     orderBy("id", "desc"),
     limit(3)
+  );
+
+  try {
+    // Get documents matching the query
+    const querySnapshot = await getDocs(homePageQuery);
+    const productsArray = [];
+    querySnapshot.forEach((doc) => {
+      productsArray.push(doc.data());
+    });
+    console.log(productsArray);
+    return productsArray;
+  } catch (error) {
+    alert(error.message);
+  }
+};
+export const getAllBestSelling = async (categoryId) => {
+  const productsCollectionRef = collection(firestore, "products");
+  const homePageQuery = query(
+    productsCollectionRef,
+    where("checkedValues", "array-contains", categoryId),
+    orderBy("id", "desc"),
+    limit(10)
   );
 
   try {

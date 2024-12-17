@@ -3,6 +3,7 @@
 import { products5 } from "@/data/products";
 import { Swiper, SwiperSlide } from "swiper/react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useContextElement } from "@/context/Context";
 import Link from "next/link";
 import { Navigation, Pagination } from "swiper/modules";
@@ -12,6 +13,7 @@ import "./products.css";
 
 const Products = ({ homeCategories, homeProducts, first }) => {
   let firstCategories = [];
+  const router = useRouter();
   let secondCategories = [];
   if (homeCategories) {
     firstCategories = homeCategories
@@ -189,12 +191,14 @@ const Products = ({ homeCategories, homeProducts, first }) => {
                     <div
                       className="card-product style-skincare"
                       style={{ position: "relative" }}
+                      onClick={() => {
+                        router.push(
+                          `/product-swatch-image-rounded/${product.id}`
+                        );
+                      }}
                     >
                       <div className="card-product-wrapper">
-                        <a
-                          href={product.id}
-                          className="product-img fixed-height"
-                        >
+                        <a className="product-img fixed-height">
                           <Image
                             className="lazyload img-product"
                             data-src={product.imgSrc}
