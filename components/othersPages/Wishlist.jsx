@@ -2,30 +2,20 @@
 import { allProducts } from "@/data/products";
 import { useContextElement } from "@/context/Context";
 import { useEffect, useState } from "react";
-import { ProductCardWishlist } from "../shopCards/ProductCardWishlist";
+import { connect } from "react-redux";
+import ProductCard from "../shopCards/ProductCardWishlist";
 import Link from "next/link";
 
-export default function Wishlist() {
-  const { wishList } = useContextElement();
-  const [wishListItems, setWishListItems] = useState([]);
-  useEffect(() => {
-    if (wishList) {
-      console.log(wishList);
-      setWishListItems(
-        [...allProducts].filter((el) => wishList.includes(el.id))
-      );
-    }
-  }, [wishList]);
-
+const Wishlist = ({ wishlist }) => {
   return (
     <section className="flat-spacing-2">
       <div className="container">
         <div className="grid-layout wrapper-shop" data-grid="grid-4">
-          {wishListItems.map((elm, i) => (
-            <ProductCardWishlist key={i} product={elm} />
+          {wishlist.map((elm, i) => (
+            <ProductCard key={i} product={elm} />
           ))}
         </div>
-        {!wishListItems.length && (
+        {wishlist.length == 0 && (
           <>
             <div
               className="row align-items-center w-100"
@@ -48,4 +38,11 @@ export default function Wishlist() {
       </div>
     </section>
   );
-}
+};
+
+const mapStateToProps = (state) => {
+  return {
+    wishlist: state.wishlist.wishlist,
+  };
+};
+export default connect(mapStateToProps, {})(Wishlist);

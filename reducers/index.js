@@ -13,6 +13,7 @@ import attributesReducer from "./attributes";
 import couponsReducers from "./coupons";
 import reviewsReducer from "./reviews";
 import cartReducer from "./cart";
+import wishlistReducer from "./wishlist";
 const rootReducer = combineReducers({
   orders: setOrdersReducer,
   payments: setPaymentsReducer,
@@ -28,6 +29,7 @@ const rootReducer = combineReducers({
   attributes: attributesReducer,
   reviews: reviewsReducer,
   cart: cartReducer,
+  wishlist: wishlistReducer,
 });
 
 export default rootReducer;

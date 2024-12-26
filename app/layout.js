@@ -4,7 +4,7 @@ import "../public/scss/main.scss";
 import "../public/icons/icofont/icofont.min.css";
 import "photoswipe/dist/photoswipe.css";
 import "rc-slider/assets/index.css";
-
+import { Toaster } from "react-hot-toast";
 import HomesModal from "@/components/modals/HomesModal";
 import Context from "@/context/Context";
 import QuickView from "@/components/modals/QuickView";
@@ -37,6 +37,7 @@ import { setFreeShippingRedux } from "@/actions";
 
 const RootLayout = ({ children }) => {
   const pathname = usePathname();
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       // Import the script only on the client side
@@ -200,6 +201,19 @@ const RootLayout = ({ children }) => {
           </Context>
         </Provider>
         <ScrollTop />
+        <Toaster
+          toastOptions={{
+            // Define default options
+            className: "",
+            duration: 5000,
+            style: {
+              background: "black",
+              color: "white",
+            },
+
+            // Default options for specific types
+          }}
+        />
       </body>
     </html>
   );

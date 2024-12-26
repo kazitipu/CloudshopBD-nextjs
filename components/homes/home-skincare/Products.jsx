@@ -10,8 +10,17 @@ import { Navigation, Pagination } from "swiper/modules";
 import { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import "./products.css";
-
-const Products = ({ homeCategories, homeProducts, first }) => {
+import { addToWishlistRedux, removeFromWishlistRedux } from "@/actions";
+import toast from "react-hot-toast";
+const Products = ({
+  homeCategories,
+  homeProducts,
+  first,
+  addToWishlistRedux,
+  removeFromWishlistRedux,
+  wishlist,
+  currentUser,
+}) => {
   let firstCategories = [];
   const router = useRouter();
   let secondCategories = [];
@@ -232,32 +241,41 @@ const Products = ({ homeCategories, homeProducts, first }) => {
                         </a>
                         <div className="list-product-btn">
                           <a
-                            onClick={() => {}}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (
+                                wishlist &&
+                                wishlist.length > 0 &&
+                                wishlist.find((wish) => wish.id == product.id)
+                              ) {
+                                removeFromWishlistRedux(product, currentUser);
+                                toast("Item removed from wishlist");
+                              } else {
+                                addToWishlistRedux(product, currentUser);
+                                toast("Item added to Wishlist");
+                              }
+                            }}
                             className="box-icon bg_white wishlist btn-icon-action"
                           >
-                            <span className={`icon icon-heart`} />
-                            <span className="tooltip">Add to Wishlist</span>
+                            <span
+                              className={`icon icon-heart`}
+                              style={{
+                                color:
+                                  wishlist &&
+                                  wishlist.length > 0 &&
+                                  wishlist.find((wish) => wish.id == product.id)
+                                    ? "red"
+                                    : "",
+                              }}
+                            />
+                            <span className="tooltip">
+                              {wishlist &&
+                              wishlist.length > 0 &&
+                              wishlist.find((wish) => wish.id == product.id)
+                                ? "Added to Wishlist"
+                                : "Add to Wishlist"}
+                            </span>
                             <span className="icon icon-delete" />
-                          </a>
-                          <a
-                            href="#compare"
-                            data-bs-toggle="offcanvas"
-                            aria-controls="offcanvasLeft"
-                            onClick={() => {}}
-                            className="box-icon bg_white compare btn-icon-action"
-                          >
-                            <span className={`icon icon-compare`} />
-                            <span className="tooltip">Add to Compare</span>
-                            <span className="icon icon-check" />
-                          </a>
-                          <a
-                            href="#quick_view"
-                            onClick={() => {}}
-                            data-bs-toggle="modal"
-                            className="box-icon bg_white quickview tf-btn-loading"
-                          >
-                            <span className="icon icon-view" />
-                            <span className="tooltip">Quick View</span>
                           </a>
                         </div>
                       </div>
@@ -382,5 +400,13 @@ const Products = ({ homeCategories, homeProducts, first }) => {
     </>
   );
 };
-
-export default Products;
+const mapStateToProps = (state) => {
+  return {
+    wishlist: state.wishlist.wishlist,
+    currentUser: state.users.currentUser,
+  };
+};
+export default connect(mapStateToProps, {
+  addToWishlistRedux,
+  removeFromWishlistRedux,
+})(Products);

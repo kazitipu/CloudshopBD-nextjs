@@ -14,6 +14,11 @@ const cartReducer = (state = initialState, action) => {
         ...state,
         cartData: payload,
       };
+    case "SET_CART":
+      return {
+        ...state,
+        cartData: payload,
+      };
     case "ADD_TO_ORDER":
       return {
         ...state,
@@ -119,6 +124,43 @@ const cartReducer = (state = initialState, action) => {
                 ...cartItem,
                 quantity:
                   cartItem.quantity > 1 ? parseInt(cartItem.quantity) - 1 : 1,
+              };
+            } else {
+              return cartItem;
+            }
+          }
+        }),
+      };
+    case "SET_QUANTITY":
+      return {
+        ...state,
+        cartData: state.cartData.map((cartItem) => {
+          if (
+            payload.item.selectedVariation &&
+            payload.item.selectedVariation.id
+          ) {
+            if (
+              cartItem.selectedVariation &&
+              cartItem.selectedVariation.id == payload.item.selectedVariation.id
+            ) {
+              return {
+                ...cartItem,
+                quantity:
+                  payload.quantity && payload.quantity > 0
+                    ? parseInt(payload.quantity)
+                    : cartItem.quantity,
+              };
+            } else {
+              return cartItem;
+            }
+          } else {
+            if (cartItem.productId == payload.item.productId) {
+              return {
+                ...cartItem,
+                quantity:
+                  payload.quantity && payload.quantity > 0
+                    ? parseInt(payload.quantity)
+                    : cartItem.quantity,
               };
             } else {
               return cartItem;

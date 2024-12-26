@@ -8,9 +8,9 @@ import { Swiper, SwiperSlide } from "swiper/react";
 
 export default function Slider1ZoomOuter({
   currentColor = "Beige",
-  handleColor = () => {},
-  firstImage,
   product,
+  getPicture,
+  variation,
 }) {
   let images = [];
   if (product && product.id) {
@@ -27,10 +27,8 @@ export default function Slider1ZoomOuter({
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
   const swiperRef = useRef(null);
   useEffect(() => {
-    const slideIndex = 1;
-    // images.filter(
-    //   (elm) => elm.dataValue.toLowerCase() == currentColor.toLowerCase()
-    // )[0]?.id - 1;
+    const slideIndex = 0;
+
     swiperRef.current.slideTo(slideIndex);
   }, [currentColor]);
   useEffect(() => {
@@ -81,6 +79,17 @@ export default function Slider1ZoomOuter({
     };
   }, []); // Empty dependency array to run only once on mount
 
+  let images2 = images;
+  if (
+    getPicture &&
+    variation &&
+    variation.id &&
+    variation.pictures &&
+    variation.pictures.length > 0
+  ) {
+    images2 = variation.pictures;
+  }
+  console.log(variation);
   return (
     <>
       <Swiper
@@ -88,7 +97,7 @@ export default function Slider1ZoomOuter({
         direction="vertical"
         spaceBetween={10}
         slidesPerView={6}
-        className="tf-product-media-thumbs other-image-zoom"
+        className="tf-product-media-thumbs other-image-zoom overflow-for-mobile"
         onSwiper={setThumbsSwiper}
         modules={[Thumbs]}
         breakpoints={{
@@ -100,7 +109,7 @@ export default function Slider1ZoomOuter({
           },
         }}
       >
-        {images.map((slide, index) => (
+        {images2.map((slide, index) => (
           <SwiperSlide key={index} className="stagger-item">
             <div className="item">
               <Image
@@ -130,11 +139,8 @@ export default function Slider1ZoomOuter({
           thumbs={{ swiper: thumbsSwiper }}
           modules={[Thumbs, Navigation]}
           onSwiper={(swiper) => (swiperRef.current = swiper)}
-          // onSlideChange={(swiper) => {
-          //   handleColor(images[swiper.activeIndex].dataValue);
-          // }}
         >
-          {images.map((slide, index) => (
+          {images2.map((slide, index) => (
             <SwiperSlide key={index}>
               <Item original={slide} thumbnail={slide} width={650} height={750}>
                 {({ ref, open }) => (

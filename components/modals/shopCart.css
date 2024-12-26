@@ -1,0 +1,10 @@
+.two-lines {
+  display: -webkit-box; /* Enables flexbox layout for text truncation */
+  -webkit-box-orient: vertical; /* Sets the orientation to vertical */
+  overflow: hidden; /* Ensures content outside the box is hidden */
+  text-overflow: ellipsis; /* Adds ellipsis to truncated text */
+  line-clamp: 2; /* Limits text to 2 lines */
+  -webkit-line-clamp: 2; /* Chrome/Safari-specific line clamping */
+  height: calc(2 * 1.2em); /* Adjust based on your line-height (2 lines) */
+  line-height: 1.2em; /* Sets the height of each line */
+}

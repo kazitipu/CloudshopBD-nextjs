@@ -1,15 +1,21 @@
 "use client";
-
 import { useEffect, useState } from "react";
-
+import { connect } from "react-redux";
+import ClipLoader from "react-spinners/ClipLoader";
+import toast, { Toaster } from "react-hot-toast";
+import { updateSingleProductRedux } from "@/actions";
 const tabs = [
   { title: "Description", active: true },
   { title: "Reviews", active: false },
   { title: "Add Review", active: false },
 ];
 
-export default function ShopDetailsTab({ product }) {
+const ShopDetailsTab = ({ product, currentUser, updateSingleProductRedux }) => {
   const [currentTab, setCurrentTab] = useState(1);
+  const [rating, setRating] = useState(0);
+  const [review, setReview] = useState("");
+  const [loader, setLoader] = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
 
   return (
     <section
@@ -20,7 +26,10 @@ export default function ShopDetailsTab({ product }) {
         <div className="row">
           <div className="col-12">
             <div className="widget-tabs style-has-border">
-              <ul className="widget-menu-tab">
+              <ul
+                className="widget-menu-tab"
+                style={{ justifyContent: "center" }}
+              >
                 {tabs.map((elm, i) => (
                   <li
                     key={i}
@@ -51,8 +60,8 @@ export default function ShopDetailsTab({ product }) {
                 >
                   <div style={{ marginTop: 10, padding: 10 }}>
                     {product.reviews && product.reviews.length > 0 ? (
-                      product.reviews.map((review) => (
-                        <div style={{ marginBottom: 40 }}>
+                      product.reviews.map((review, index) => (
+                        <div style={{ marginBottom: 40 }} key={index}>
                           <div
                             style={{
                               display: "flex",
@@ -194,60 +203,174 @@ export default function ShopDetailsTab({ product }) {
                     currentTab == 3 ? "active" : ""
                   } `}
                 >
-                  <div className="tf-page-privacy-policy">
-                    <div className="title">
-                      The Company Private Limited Policy
+                  {currentUser &&
+                  currentUser.uid &&
+                  product.reviews &&
+                  product.reviews.length > 0 &&
+                  product.reviews.find(
+                    (review) => review.id == currentUser.uid
+                  ) ? (
+                    <div>You have already added a review for this product</div>
+                  ) : (
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <div>
+                        <div
+                          style={{
+                            fontWeight: "bold",
+                            fontSize: 15,
+                            textAlign: "center",
+                          }}
+                        >
+                          Rate The Product
+                        </div>
+                        <div className="rating">
+                          <i
+                            className="icon-start"
+                            style={{
+                              fontSize: 50,
+                              color: rating > 0 ? "orange" : "gainsboro",
+                            }}
+                            onClick={() => {
+                              setRating(1);
+                            }}
+                          />
+                          <i
+                            className="icon-start"
+                            style={{
+                              fontSize: 50,
+                              color: rating > 1 ? "orange" : "gainsboro",
+                            }}
+                            onClick={() => {
+                              setRating(2);
+                            }}
+                          />
+                          <i
+                            className="icon-start"
+                            style={{
+                              fontSize: 50,
+                              color: rating > 2 ? "orange" : "gainsboro",
+                            }}
+                            onClick={() => {
+                              setRating(3);
+                            }}
+                          />
+                          <i
+                            className="icon-start"
+                            style={{
+                              fontSize: 50,
+                              color: rating > 3 ? "orange" : "gainsboro",
+                            }}
+                            onClick={() => {
+                              setRating(4);
+                            }}
+                          />
+                          <i
+                            className="icon-start"
+                            style={{
+                              fontSize: 50,
+                              color: rating > 4 ? "orange" : "gainsboro",
+                            }}
+                            onClick={() => {
+                              setRating(5);
+                            }}
+                          />
+                        </div>
+                        <div
+                          style={{
+                            fontWeight: "bold",
+                            fontSize: 15,
+                            textAlign: "center",
+                            marginTop: 35,
+                          }}
+                        >
+                          Please share your opinion about the product
+                        </div>
+                        <textarea
+                          name="message"
+                          rows={4}
+                          value={review}
+                          placeholder=""
+                          className=""
+                          tabIndex={2}
+                          aria-required="true"
+                          onChange={(e) => {
+                            setReview(e.target.value);
+                          }}
+                          required
+                          defaultValue={"Enter your text here (optional)"}
+                          style={{ borderRadius: 5, marginTop: 10 }}
+                        />
+                        <div
+                          className="tf-btn btn-fill justify-content-center fw-6 fs-16 flex-grow-1 animate-hover-btn "
+                          style={{ display: "flex", marginTop: 8 }}
+                          onClick={async () => {
+                            setLoader(true);
+                            let date = new Date();
+                            await updateSingleProductRedux({
+                              ...product,
+                              reviews:
+                                product.reviews && product.reviews.length > 0
+                                  ? [
+                                      {
+                                        user: currentUser
+                                          ? currentUser
+                                          : { displayName: "Anonymus" },
+                                        id: currentUser
+                                          ? currentUser.uid
+                                          : Math.floor(
+                                              Math.random() * (9999 - 1000 + 1)
+                                            ) + 1000,
+                                        reviewText: review,
+                                        star: rating,
+                                        date: date.toLocaleDateString("en-GB"),
+                                        imageUrl: imageUrl ? imageUrl : "",
+                                        time: date.getTime().toString(),
+                                      },
+                                      ...product.reviews,
+                                    ]
+                                  : [
+                                      {
+                                        user: currentUser
+                                          ? currentUser
+                                          : { displayName: "Anonymus" },
+                                        id: currentUser
+                                          ? currentUser.uid
+                                          : Math.floor(
+                                              Math.random() * (9999 - 1000 + 1)
+                                            ) + 1000,
+                                        reviewText: review,
+                                        star: rating,
+                                        date: date.toLocaleDateString("en-GB"),
+                                        imageUrl: imageUrl ? imageUrl : "",
+                                        time: date.getTime().toString(),
+                                      },
+                                    ],
+                            });
+                            setReview("");
+                            setRating(0);
+                            setCurrentTab(2);
+                            toast("Review added successfully.");
+                            setLoader(false);
+                          }}
+                        >
+                          <ClipLoader
+                            color={"white"}
+                            loading={loader}
+                            size={16}
+                            aria-label="Loading Spinner"
+                            data-testid="loader"
+                          />
+                          {!loader && "Add review"}
+                        </div>
+                      </div>
                     </div>
-                    <p>
-                      The Company Private Limited and each of their respective
-                      subsidiary, parent and affiliated companies is deemed to
-                      operate this Website (“we” or “us”) recognizes that you
-                      care how information about you is used and shared. We have
-                      created this Privacy Policy to inform you what information
-                      we collect on the Website, how we use your information and
-                      the choices you have about the way your information is
-                      collected and used. Please read this Privacy Policy
-                      carefully. Your use of the Website indicates that you have
-                      read and accepted our privacy practices, as outlined in
-                      this Privacy Policy.
-                    </p>
-                    <p>
-                      Please be advised that the practices described in this
-                      Privacy Policy apply to information gathered by us or our
-                      subsidiaries, affiliates or agents: (i) through this
-                      Website, (ii) where applicable, through our Customer
-                      Service Department in connection with this Website, (iii)
-                      through information provided to us in our free standing
-                      retail stores, and (iv) through information provided to us
-                      in conjunction with marketing promotions and sweepstakes.
-                    </p>
-                    <p>
-                      We are not responsible for the content or privacy
-                      practices on any websites.
-                    </p>
-                    <p>
-                      We reserve the right, in our sole discretion, to modify,
-                      update, add to, discontinue, remove or otherwise change
-                      any portion of this Privacy Policy, in whole or in part,
-                      at any time. When we amend this Privacy Policy, we will
-                      revise the “last updated” date located at the top of this
-                      Privacy Policy.
-                    </p>
-                    <p>
-                      If you provide information to us or access or use the
-                      Website in any way after this Privacy Policy has been
-                      changed, you will be deemed to have unconditionally
-                      consented and agreed to such changes. The most current
-                      version of this Privacy Policy will be available on the
-                      Website and will supersede all previous versions of this
-                      Privacy Policy.
-                    </p>
-                    <p>
-                      If you have any questions regarding this Privacy Policy,
-                      you should contact our Customer Service Department by
-                      email at marketing@company.com
-                    </p>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -256,4 +379,13 @@ export default function ShopDetailsTab({ product }) {
       </div>
     </section>
   );
-}
+};
+
+const mapStateToProps = (state) => {
+  return {
+    currentUser: state.users.currentUser,
+  };
+};
+export default connect(mapStateToProps, { updateSingleProductRedux })(
+  ShopDetailsTab
+);

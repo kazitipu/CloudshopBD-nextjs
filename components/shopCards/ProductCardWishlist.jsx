@@ -1,155 +1,132 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useContextElement } from "@/context/Context";
-import CountdownComponent from "../common/Countdown";
-export const ProductCardWishlist = ({ product }) => {
+
+import "./productCard.css";
+import { useRouter } from "next/navigation";
+const ProductCard = ({ product, gridItems = 6 }) => {
+  const router = useRouter();
+  const divRef = useRef(null);
+  const [width, setWidth] = useState(0);
   const [currentImage, setCurrentImage] = useState(product.imgSrc);
-  const { setQuickViewItem } = useContextElement();
-  const {
-    setQuickAddItem,
-    addToWishlist,
-    isAddedtoWishlist,
-    removeFromWishlist,
-    addToCompareItem,
-    isAddedtoCompareItem,
-  } = useContextElement();
+
+  useEffect(() => {
+    if (divRef.current) {
+      // Access the width of the div
+      setWidth(divRef.current.offsetWidth);
+
+      // Optional: Add a resize listener for responsive layouts
+      const handleResize = () => setWidth(divRef.current.offsetWidth);
+      window.addEventListener("resize", handleResize);
+
+      return () => window.removeEventListener("resize", handleResize);
+    }
+  }, []);
+  useEffect(() => {
+    if (divRef.current) {
+      // Access the width of the div
+      setWidth(divRef.current.offsetWidth);
+    }
+  }, [gridItems]);
+
+  useEffect(() => {
+    setCurrentImage(product.imgSrc);
+  }, [product]);
 
   return (
-    <div className="card-product fl-item" key={product.id}>
-      <div className="card-product-wrapper">
-        <Link href={`/product-detail/${product.id}`} className="product-img">
-          <Image
-            className="lazyload img-product"
-            data-src={product.imgSrc}
-            src={currentImage}
-            alt="image-product"
-            width={720}
-            height={1005}
-          />
-          <Image
-            className="lazyload img-hover"
-            data-src={
-              product.imgHoverSrc ? product.imgHoverSrc : product.imgSrc
-            }
-            src={product.imgHoverSrc ? product.imgHoverSrc : product.imgSrc}
-            alt="image-product"
-            width={720}
-            height={1005}
-          />
-        </Link>
-        <div className="list-product-btn type-wishlist">
-          <a
-            onClick={() => removeFromWishlist(product.id)}
-            className="box-icon bg_white wishlist"
+    <>
+      {product && product.pictures && (
+        <div
+          className="card-product style-skincare"
+          style={{
+            position: "relative",
+            border: "1px solid gainsboro",
+          }}
+          key={product.id}
+          onClick={() => {
+            router.push(`/product-swatch-image-rounded/${product.id}`);
+          }}
+        >
+          <div className="card-product-wrapper">
+            <a
+              className="product-img"
+              ref={divRef}
+              style={{ maxHeight: width, minHeight: width }}
+            >
+              <Image
+                className="lazyload img-product"
+                data-src={product.pictures[0]}
+                alt="image-product"
+                src={product.pictures[0]}
+                width={360}
+                height={384}
+              />
+              <Image
+                className="lazyload img-hover"
+                data-src={
+                  product.pictures2 &&
+                  product.pictures2[0] &&
+                  product.pictures2[0] !=
+                    "/static/media/addProduct.3dff302b.png"
+                    ? product.pictures2[0]
+                    : product.pictures[0]
+                }
+                alt="image-product"
+                src={
+                  product.pictures2 &&
+                  product.pictures2[0] &&
+                  product.pictures2[0] !=
+                    "/static/media/addProduct.3dff302b.png"
+                    ? product.pictures2[0]
+                    : product.pictures[0]
+                }
+                width={360}
+                height={384}
+              />
+            </a>
+          </div>
+          <div
+            className="card-product-info text-center"
+            style={{
+              padding: 10,
+              paddingBottom: 5,
+            }}
           >
-            <span className="tooltip">Remove Wishlist</span>
-            <span className="icon icon-delete" />
-          </a>
-        </div>
+            <Link
+              href={`/product-detail/${product.id}`}
+              className="title link"
+              style={{
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                maxWidth: "100%",
+                textAlign: "left",
+                minHeight: "2.4em", // Minimum height to account for 2 lines
+                lineHeight: "1.2em",
+                fontWeight: "bold",
+                color: "#555",
+              }}
+            >
+              {product.name}
+            </Link>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
 
-        <div className="list-product-btn">
-          <a
-            href="#quick_add"
-            onClick={() => setQuickAddItem(product.id)}
-            data-bs-toggle="modal"
-            className="box-icon bg_white quick-add tf-btn-loading"
-          >
-            <span className="icon icon-bag" />
-            <span className="tooltip">Quick Add</span>
-          </a>
-          <a
-            onClick={() => addToWishlist(product.id)}
-            className="box-icon bg_white wishlist btn-icon-action"
-          >
-            <span
-              className={`icon icon-heart ${
-                isAddedtoWishlist(product.id) ? "added" : ""
-              }`}
-            />
-            <span className="tooltip">
-              {isAddedtoWishlist(product.id)
-                ? "Already Wishlisted"
-                : "Add to Wishlist"}
-            </span>
-            <span className="icon icon-delete" />
-          </a>
-          <a
-            href="#compare"
-            data-bs-toggle="offcanvas"
-            aria-controls="offcanvasLeft"
-            onClick={() => addToCompareItem(product.id)}
-            className="box-icon bg_white compare btn-icon-action"
-          >
-            <span
-              className={`icon icon-compare ${
-                isAddedtoCompareItem(product.id) ? "added" : ""
-              }`}
-            />
-            <span className="tooltip">
-              {" "}
-              {isAddedtoCompareItem(product.id)
-                ? "Already Compared"
-                : "Add to Compare"}
-            </span>
-            <span className="icon icon-check" />
-          </a>
-          <a
-            href="#quick_view"
-            onClick={() => setQuickViewItem(product)}
-            data-bs-toggle="modal"
-            className="box-icon bg_white quickview tf-btn-loading"
-          >
-            <span className="icon icon-view" />
-            <span className="tooltip">Quick View</span>
-          </a>
-        </div>
-        {product.countdown && (
-          <div className="countdown-box">
-            <div className="js-countdown">
-              <CountdownComponent />
+                fontWeight: "bold",
+              }}
+            >
+              ৳{product.price ? product.price : product.salePrice}
             </div>
           </div>
-        )}
-        {product.sizes && (
-          <div className="size-list">
-            {product.sizes.map((size) => (
-              <span key={size}>{size}</span>
-            ))}
-          </div>
-        )}
-      </div>
-      <div className="card-product-info">
-        <Link href={`/product-detail/${product.id}`} className="title link">
-          {product.title}
-        </Link>
-        <span className="price">${product.price.toFixed(2)}</span>
-        {product.colors && (
-          <ul className="list-color-product">
-            {product.colors.map((color) => (
-              <li
-                className={`list-color-item color-swatch ${
-                  currentImage == color.imgSrc ? "active" : ""
-                } `}
-                key={color.name}
-                onMouseOver={() => setCurrentImage(color.imgSrc)}
-              >
-                <span className="tooltip">{color.name}</span>
-                <span className={`swatch-value ${color.colorClass}`} />
-                <Image
-                  className="lazyload"
-                  data-src={color.imgSrc}
-                  src={color.imgSrc}
-                  alt="image-product"
-                  width={720}
-                  height={1005}
-                />
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </div>
+        </div>
+      )}
+    </>
   );
 };
+
+export default ProductCard;

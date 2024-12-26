@@ -12,12 +12,14 @@ import {
   getAllHomeScreenCategoriesRedux,
   getAllHomeScreenProductsRedux,
 } from "@/actions";
+import { useRouter } from "next/navigation";
 const Products = ({
   getAllHomeScreenCategoriesRedux,
   homeCategories,
   getAllHomeScreenProductsRedux,
   homeProducts,
 }) => {
+  const router = useRouter();
   let firstCategories = [];
   let secondCategories = [];
   if (homeCategories) {
@@ -154,9 +156,16 @@ const Products = ({
               {renderableProducts.length > 0 &&
                 renderableProducts.map((product) => (
                   <SwiperSlide key={product.id}>
-                    <div className="card-product style-skincare">
+                    <div
+                      className="card-product style-skincare"
+                      onClick={() => {
+                        router.push(
+                          `/product-swatch-image-rounded/${product.id}`
+                        );
+                      }}
+                    >
                       <div className="card-product-wrapper">
-                        <a href={product.id} className="product-img">
+                        <a className="product-img">
                           <Image
                             className="lazyload img-product"
                             data-src={product.imgSrc}
@@ -184,32 +193,14 @@ const Products = ({
                         </a>
                         <div className="list-product-btn">
                           <a
-                            onClick={() => {}}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                            }}
                             className="box-icon bg_white wishlist btn-icon-action"
                           >
                             <span className={`icon icon-heart`} />
                             <span className="tooltip">Add to Wishlist</span>
                             <span className="icon icon-delete" />
-                          </a>
-                          <a
-                            href="#compare"
-                            data-bs-toggle="offcanvas"
-                            aria-controls="offcanvasLeft"
-                            onClick={() => {}}
-                            className="box-icon bg_white compare btn-icon-action"
-                          >
-                            <span className={`icon icon-compare`} />
-                            <span className="tooltip">Add to Compare</span>
-                            <span className="icon icon-check" />
-                          </a>
-                          <a
-                            href="#quick_view"
-                            onClick={() => {}}
-                            data-bs-toggle="modal"
-                            className="box-icon bg_white quickview tf-btn-loading"
-                          >
-                            <span className="icon icon-view" />
-                            <span className="tooltip">Quick View</span>
                           </a>
                         </div>
                       </div>

@@ -13,6 +13,7 @@ import { allProducts } from "@/data/products";
 import ProductSinglePrevNext from "@/components/common/ProductSinglePrevNext";
 import { connect } from "react-redux";
 import { useEffect } from "react";
+import "./ProductDetailPage.css";
 const page = ({ params, getSingleProductRedux, product }) => {
   useEffect(() => {
     if (params.id) {
@@ -34,7 +35,7 @@ const page = ({ params, getSingleProductRedux, product }) => {
                   </Link>
                   <i className="icon icon-arrow-right" />
 
-                  <span className="text">{product.name}</span>
+                  <span className="text two-line-span">{product.name}</span>
                 </div>
               </div>
             </div>

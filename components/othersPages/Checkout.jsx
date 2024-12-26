@@ -2,18 +2,179 @@
 import { useContextElement } from "@/context/Context";
 import Image from "next/image";
 import Link from "next/link";
-export default function Checkout() {
-  const { cartProducts, setCartProducts, totalPrice } = useContextElement();
+import { connect } from "react-redux";
+import React, { useState, useEffect } from "react";
+import { matchCoupon } from "@/firebase/firebase.utils";
+import { setCouponRedux, setTotalRedux } from "@/actions";
+import toast from "react-hot-toast";
+import { ClipLoader } from "react-spinners";
+const Checkout = ({
+  cartData,
+  setCouponRedux,
+  currentUser,
+  freeShipping,
+  setTotalRedux,
+  guest,
+}) => {
+  const [number, onChangeNumber] = React.useState("");
+  const [loader, setLoader] = useState(false);
+  const [showCoupon, setShowCoupon] = React.useState(false);
+  const [coupon, setCoupon] = React.useState(null);
+  const [dhakaDelivery, setDhakaDelivery] = React.useState(true);
+  const [state, setState] = useState({
+    loading: true,
+    cartArr: [],
+    cartProducts: [],
+    sumAmount: 0,
+    actualOrder: 0,
+    isApplied: false,
+    validCode: false,
+    couponCode: null,
+    dhakaDelivery: true,
+  });
+  useEffect(() => {
+    calculateCart();
+  }, [cartData]);
+
+  const calculateCart = () => {
+    let cartProducts = cartData;
+    let sumAmount = 0;
+    let actualOrder = 0;
+
+    //find and create array
+    cartProducts &&
+      cartProducts.length > 0 &&
+      cartProducts.forEach(function (item, index) {
+        let price = getPrice2(item);
+        let actualPrice = getPrice3(item);
+        sumAmount += parseInt(price) * item.quantity;
+        actualOrder += parseInt(actualPrice) * item.quantity;
+      });
+
+    setState({
+      ...state,
+      loading: false,
+      cartProducts: cartProducts,
+      sumAmount: sumAmount,
+      actualOrder: actualOrder,
+    });
+    // props.setTotalRedux(sumAmount);
+  };
+
+  const singleProductTotal = (product) => {
+    let total = parseInt(getPrice4(product)) * product.quantity;
+    return total;
+  };
+  const singleProductTotal2 = (product) => {
+    let total = parseInt(getPrice3(product)) * product.quantity;
+    return total;
+  };
+
+  const getPrice2 = (product) => {
+    if (product.selectedVariation.id) {
+      if (product.selectedVariation.salePrice == 0) {
+        return product.selectedVariation.price;
+      } else {
+        return product.selectedVariation.salePrice;
+      }
+    } else {
+      if (product.product) {
+        if (product.product.salePrice == 0) {
+          return product.product.price;
+        } else {
+          return product.product.salePrice;
+        }
+      } else {
+        return 0;
+      }
+    }
+  };
+
+  const getPrice3 = (product) => {
+    if (product.selectedVariation.id) {
+      return product.selectedVariation.price;
+    } else {
+      if (product.product) {
+        return product.product.price;
+      } else {
+        return 0;
+      }
+    }
+  };
+
+  const getPrice4 = (product) => {
+    if (product.selectedVariation.id) {
+      if (product.selectedVariation.salePrice == 0) {
+        return product.selectedVariation.price;
+      } else {
+        return product.selectedVariation.salePrice;
+      }
+    } else {
+      if (product.product) {
+        if (product.product.salePrice == 0) {
+          return product.product.price;
+        } else {
+          return product.product.salePrice;
+        }
+      } else {
+        return 0;
+      }
+    }
+  };
+
+  const getTotal = (sumAmount) => {
+    let total = 0;
+    let deliveryCharge = 0;
+    if (dhakaDelivery) {
+      deliveryCharge = 70;
+    } else {
+      deliveryCharge = 120;
+    }
+    if (coupon) {
+      if (sumAmount < freeShipping) {
+        total =
+          coupon.discountType == "cash"
+            ? sumAmount + deliveryCharge - coupon.discountAmount
+            : sumAmount +
+              deliveryCharge -
+              parseInt(sumAmount * (coupon.discountAmount / 100));
+        setTotalRedux(total);
+        return total;
+      } else {
+        total =
+          coupon.discountType == "cash"
+            ? sumAmount - coupon.discountAmount
+            : sumAmount - parseInt(sumAmount * (coupon.discountAmount / 100));
+        setTotalRedux(total);
+        return total;
+      }
+    } else {
+      if (sumAmount < freeShipping) {
+        total = sumAmount + deliveryCharge;
+        setTotalRedux(total);
+        return total;
+      } else {
+        total = sumAmount;
+        setTotalRedux(total);
+        return total;
+      }
+    }
+  };
+
+  let shippingAddress = null;
+  if (currentUser && currentUser.address && currentUser.address.length > 0) {
+    shippingAddress = currentUser.address.find((addr) => addr.defaultShipping);
+  } else if (guest && guest.address && guest.address.length > 0) {
+    shippingAddress = guest.address.find((addr) => addr.defaultShipping);
+  }
+
   return (
     <section className="flat-spacing-11">
       <div className="container">
         <div className="tf-page-cart-wrap layout-2">
           <div className="tf-page-cart-item">
-            <h5 className="fw-5 mb_20">Billing details</h5>
-            <form
-              onSubmit={(e) => e.preventDefault()}
-              className="form-checkout"
-            >
+            <h5 className="fw-5 mb_20">Delivery Address</h5>
+            <form className="form-checkout">
               <div className="box grid-2">
                 <fieldset className="fieldset">
                   <label htmlFor="first-name">First Name</label>
@@ -204,35 +365,76 @@ export default function Checkout() {
           <div className="tf-page-cart-footer">
             <div className="tf-cart-footer-inner">
               <h5 className="fw-5 mb_20">Your order</h5>
-              <form
-                onSubmit={(e) => e.preventDefault()}
-                className="tf-page-cart-checkout widget-wrap-checkout"
-              >
+              <form className="tf-page-cart-checkout widget-wrap-checkout">
                 <ul className="wrap-checkout-product">
-                  {cartProducts.map((elm, i) => (
+                  {cartData.map((item, i) => (
                     <li key={i} className="checkout-product-item">
                       <figure className="img-product">
                         <Image
                           alt="product"
-                          src={elm.imgSrc}
+                          src={
+                            item.selectedVariation &&
+                            item.selectedVariation.id &&
+                            item.selectedVariation.pictures &&
+                            item.selectedVariation.pictures.length > 0
+                              ? item.selectedVariation.pictures[0]
+                              : item.product.pictures[0]
+                          }
                           width={720}
                           height={1005}
+                          style={{ objectFit: "cover", borderRadius: 5 }}
                         />
-                        <span className="quantity">{elm.quantity}</span>
+                        <span className="quantity">{item.quantity}</span>
                       </figure>
                       <div className="content">
                         <div className="info">
-                          <p className="name">{elm.title}</p>
-                          <span className="variant">Brown / M</span>
+                          <p
+                            className="name"
+                            style={{ maxWidth: "80%", minWidth: "80%" }}
+                          >
+                            {item.product.name.slice(0, 40)}
+                          </p>
+                          <span className="variant">
+                            {" "}
+                            {item.selectedVariation &&
+                              item.selectedVariation.id &&
+                              item.selectedVariation.combination.map(
+                                (comb, index) => (
+                                  <div key={index} style={{ marginTop: -5 }}>
+                                    {item.product.savedAttributes.find(
+                                      (attr) => attr.id == comb.parentId
+                                    )
+                                      ? item.product.savedAttributes.find(
+                                          (attr) => attr.id == comb.parentId
+                                        ).name
+                                      : ""}
+                                    :{" "}
+                                    <span style={{ fontWeight: "bold" }}>
+                                      {comb.name}
+                                    </span>
+                                  </div>
+                                )
+                              )}
+                          </span>
                         </div>
-                        <span className="price">
-                          ${(elm.price * elm.quantity).toFixed(2)}
+                        <span className="price" style={{ fontWeight: "bold" }}>
+                          ৳{singleProductTotal(item)} <br />
+                          <span
+                            style={{
+                              fontWeight: "lighter",
+                              fontSize: 11,
+                              textDecoration: "line-through",
+                              marginLeft: 5,
+                            }}
+                          >
+                            ৳{singleProductTotal2(item)}
+                          </span>
                         </span>
                       </div>
                     </li>
                   ))}
                 </ul>
-                {!cartProducts.length && (
+                {cartData.length == 0 && (
                   <div className="container">
                     <div className="row align-items-center mt-5 mb-5">
                       <div className="col-12 fs-18">
@@ -251,52 +453,203 @@ export default function Checkout() {
                   </div>
                 )}
                 <div className="coupon-box">
-                  <input required type="text" placeholder="Discount code" />
-                  <a
-                    href="#"
+                  <input
+                    required
+                    type="text"
+                    placeholder="Enter coupon code"
+                    onChange={(e) => {
+                      onChangeNumber(e.target.value);
+                    }}
+                    value={number}
+                  />
+                  <div
                     className="tf-btn btn-sm radius-3 btn-fill btn-icon animate-hover-btn"
+                    onClick={async () => {
+                      let matchedCoupon = await matchCoupon(number);
+
+                      if (matchedCoupon) {
+                        if (
+                          Date.parse(matchedCoupon.expirationDate) <
+                          Date.parse(new Date().toDateString())
+                        ) {
+                          setCouponRedux(null);
+                          setCoupon(null);
+                          toast(
+                            `${number} Coupon code was expired at ${matchedCoupon.expirationDate}`
+                          );
+                          return;
+                        }
+                        if (
+                          currentUser &&
+                          currentUser.coupons &&
+                          currentUser.coupons.length > 0 &&
+                          currentUser.coupons.find(
+                            (coupon) => coupon.id == matchedCoupon.id
+                          ) &&
+                          currentUser.coupons.find(
+                            (coupon) => coupon.id == matchedCoupon.id
+                          ).usageLimit >= matchedCoupon.usageLimit
+                        ) {
+                          setCouponRedux(null);
+                          setCoupon(null);
+                          toast(
+                            `you've reaced the maximum usage limit of coupon ${number}.`
+                          );
+                          return;
+                        }
+                        if (matchedCoupon.minimumOrder > state.sumAmount) {
+                          setCouponRedux(null);
+                          setCoupon(null);
+                          toast(
+                            `Please Order at least ${matchedCoupon.minimumOrder}Tk to use this Coupon ${number} `
+                          );
+                        }
+
+                        setCouponRedux(matchedCoupon);
+                        setCoupon(matchedCoupon);
+                        toast(
+                          `Coupon code ${number} has been applied to your order.`
+                        );
+                        return;
+                      } else {
+                        setCouponRedux(null);
+                        setCoupon(null);
+                        toast(`${number} is not a valid coupon code.`);
+                        return;
+                      }
+                    }}
                   >
                     Apply
-                  </a>
+                  </div>
+                </div>
+                <div
+                  className="d-flex"
+                  style={{ color: "#ff8084", fontWeight: "bold", fontSize: 15 }}
+                >
+                  You are saving ৳ {state.actualOrder - state.sumAmount} in this
+                  order.{" "}
+                </div>
+                <div className="d-flex">
+                  <img
+                    src="/images/logo/cashonDelivery.png"
+                    style={{ height: 100, width: 100 }}
+                  />
+                  <div
+                    style={{
+                      alignSelf: "center",
+                      color: "white",
+                      background: "#1b5cce",
+                      fontWeight: "bold",
+                      padding: 10,
+                      paddingTop: 2,
+                      paddingBottom: 2,
+                      borderRadius: 5,
+                      width: "100%",
+                    }}
+                  >
+                    Cash on delivery
+                  </div>
+                </div>
+
+                <div className="d-flex justify-content-between line pb_20">
+                  <h6 className="fw-5">Subtotal</h6>
+                  <h6 className="total fw-5">৳ {state.actualOrder}</h6>
                 </div>
                 <div className="d-flex justify-content-between line pb_20">
-                  <h6 className="fw-5">Total</h6>
-                  <h6 className="total fw-5">$122.00</h6>
+                  <h6 className="fw-5">Discount applied</h6>
+                  <h6 className="total fw-5">
+                    {" "}
+                    -৳ {state.actualOrder - state.sumAmount}
+                  </h6>
                 </div>
-                <div className="wd-check-payment">
-                  <div className="fieldset-radio mb_20">
-                    <input
-                      required
-                      type="radio"
-                      name="payment"
-                      id="bank"
-                      className="tf-check"
-                      defaultChecked
-                    />
-                    <label htmlFor="bank">Direct bank transfer</label>
+                {coupon && (
+                  <div className="d-flex justify-content-between line pb_20">
+                    <h6 className="fw-5">
+                      Coupon applied{" "}
+                      <span style={{ color: "#ff8084" }}>({coupon.name})</span>
+                    </h6>
+                    <h6 className="total fw-5">
+                      {" "}
+                      -৳{" "}
+                      {coupon.discountType == "cash"
+                        ? coupon.discountAmount
+                        : parseInt(
+                            state.sumAmount * (coupon.discountAmount / 100)
+                          )}
+                    </h6>
                   </div>
-                  <div className="fieldset-radio mb_20">
+                )}
+                <div className="d-flex justify-content-between line pb_20">
+                  <h6 className="fw-5">Regular Delivery</h6>
+                  <h6 className="total fw-5">
+                    {state.sumAmount > freeShipping
+                      ? "Free"
+                      : dhakaDelivery
+                      ? "৳ 70"
+                      : "৳ 120"}
+                  </h6>
+                </div>
+
+                <div className="wd-check-payment">
+                  <div className="fieldset-radio" style={{ marginBottom: 5 }}>
                     <input
                       required
                       type="radio"
                       name="payment"
                       id="delivery"
                       className="tf-check"
+                      checked={dhakaDelivery}
+                      onChange={(e) => {
+                        setDhakaDelivery(true);
+                      }}
                     />
-                    <label htmlFor="delivery">Cash on delivery</label>
+                    <label htmlFor="delivery">
+                      12-48 hours delivery (Inside Dhaka) -{" "}
+                      <span style={{ fontWeight: "bold" }}>৳ 70 </span>
+                    </label>
                   </div>
-                  <p className="text_black-2 mb_20">
-                    Your personal data will be used to process your order,
-                    support your experience throughout this website, and for
-                    other purposes described in our
-                    <Link
-                      href={`/privacy-policy`}
-                      className="text-decoration-underline"
-                    >
-                      privacy policy
-                    </Link>
-                    .
-                  </p>
+                  <div className="fieldset-radio">
+                    <input
+                      required
+                      type="radio"
+                      name="payment"
+                      id="delivery"
+                      className="tf-check"
+                      checked={!dhakaDelivery}
+                      onChange={(e) => {
+                        setDhakaDelivery(false);
+                      }}
+                    />
+                    <label htmlFor="delivery">
+                      1-5 days delivery (Outside Dhaka) -{" "}
+                      <span style={{ fontWeight: "bold" }}>৳ 120 </span>
+                    </label>
+                  </div>
+                </div>
+                <div>
+                  <div
+                    style={{
+                      padding: 10,
+                      paddingTop: 2,
+                      paddingBottom: 2,
+                      backgroundColor: "cadetblue",
+                      borderRadius: 5,
+                      color: "white",
+                      alignSelf: "flex-start",
+                      display: "inline",
+                    }}
+                  >
+                    ! Order above ৳ {freeShipping} to get free delivery.
+                  </div>
+                </div>
+
+                <div className="d-flex justify-content-between line pb_20">
+                  <h6 className="fw-5"> Amount Payable</h6>
+                  <h6 className="total fw-5">৳ {getTotal(state.sumAmount)}</h6>
+                </div>
+                <div className="wd-check-payment">
+                  <div className="fieldset-radio mb_20"></div>
+
                   <div className="box-checkbox fieldset-radio mb_20">
                     <input
                       required
@@ -310,14 +663,71 @@ export default function Checkout() {
                         href={`/terms-conditions`}
                         className="text-decoration-underline"
                       >
+                        {" "}
                         terms and conditions
                       </Link>
                       .
                     </label>
                   </div>
                 </div>
-                <button className="tf-btn radius-3 btn-fill btn-icon animate-hover-btn justify-content-center">
-                  Place order
+                <button
+                  className="tf-btn radius-3 btn-fill btn-icon animate-hover-btn justify-content-center"
+                  onClick={async () => {
+                    if (!shippingAddress) {
+                      toast(
+                        "You must add/choose a shipping address to place order."
+                      );
+                      return;
+                    }
+                    setLoader(true);
+                    let orderObj = {
+                      id:
+                        new Date().getTime().toString() +
+                        currentUser.id.slice(0, 3),
+                      currentUser: currentUser,
+                      orders: props.cartData,
+                      subTotal: sateactualOrder,
+                      deliveryCharge:
+                        sumAmount >= props.freeShipping
+                          ? 0
+                          : dhakaDelivery
+                          ? 70
+                          : 120,
+                      discountApplied: actualOrder - sumAmount,
+                      couponApplied: coupon
+                        ? {
+                            name: coupon.name,
+                            discount:
+                              coupon.discountType == "cash"
+                                ? coupon.discountAmount
+                                : parseInt(
+                                    sumAmount * (coupon.discountAmount / 100)
+                                  ),
+                          }
+                        : null,
+                      orderStatus: "Processing",
+                      date: new Date().getTime().toString(),
+                      orderStatusScore: 1,
+                      userId: currentUser.uid,
+                    };
+                    await addToOrderRedux(orderObj);
+                    for (let i = 0; i < orderObj.orders.length; i++) {
+                      await updateSingleProductRedux({
+                        ...orderObj.orders[i].product,
+                        totalSold: orderObj.orders[i].product.totalSold
+                          ? orderObj.orders[i].product.totalSold +
+                            parseInt(orderObj.orders[i].quantity)
+                          : parseInt(orderObj.orders[i].quantity),
+                      });
+                    }
+                    setLoader(false);
+                  }}
+                >
+                  {loader ? (
+                    <ClipLoader loading={loader} size={19} color="white" />
+                  ) : (
+                    "Place Order"
+                  )}
                 </button>
               </form>
             </div>
@@ -326,4 +736,18 @@ export default function Checkout() {
       </div>
     </section>
   );
-}
+};
+
+const mapStateToProps = (state) => {
+  return {
+    cartData: state.cart.cartData,
+    coupon: state.cart.coupon,
+    currentUser: state.users.currentUser,
+    freeShipping: state.cart.freeShipping,
+    total: state.cart.total,
+    guest: state.users.guest,
+  };
+};
+export default connect(mapStateToProps, { setCouponRedux, setTotalRedux })(
+  Checkout
+);

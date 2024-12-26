@@ -1,8 +1,13 @@
 "use client";
+import { connect } from "react-redux";
 
-import { useContextElement } from "@/context/Context";
+const CartLength = ({ cartData }) => {
+  return <>{cartData.length}</>;
+};
 
-export default function CartLength() {
-  const { cartProducts } = useContextElement();
-  return <>{cartProducts.length}</>;
-}
+const mapStateToProps = (state) => {
+  return {
+    cartData: state.cart.cartData,
+  };
+};
+export default connect(mapStateToProps, {})(CartLength);

@@ -3,12 +3,61 @@ import { useContextElement } from "@/context/Context";
 import { products1 } from "@/data/products";
 import Image from "next/image";
 import Link from "next/link";
-import { useRef } from "react";
+import { useRef, useEffect, useState } from "react";
 import { Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
-export default function ShopCart() {
+import { useDispatch } from "react-redux";
+import {
+  setCartRedux,
+  incrementQuantityRedux,
+  decrementQuantityRedux,
+  setQuantityRedux,
+  removeFromCartRedux,
+  setReduxWishlist,
+} from "@/actions";
+import { connect } from "react-redux";
+import "./shopCart.css";
+const ShopCart = ({
+  freeShipping,
+  cartData,
+  incrementQuantityRedux,
+  decrementQuantityRedux,
+  removeFromCartRedux,
+  currentUser,
+  setQuantityRedux,
+}) => {
   const { cartProducts, totalPrice, setCartProducts, setQuickViewItem } =
     useContextElement();
+
+  useEffect(() => {
+    calculateCart();
+  }, [cartData]);
+
+  const [state, setState] = useState({
+    loading: true,
+    cartArr: [],
+    cartProducts: [],
+    sumAmount: 0,
+    actualOrder: 0,
+    isApplied: false,
+    validCode: false,
+    couponCode: null,
+    dhakaDelivery: true,
+  });
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (currentUser && currentUser.uid) {
+    } else {
+      // get cart from local storage
+      let cartData = JSON.parse(localStorage.getItem("cart")) || [];
+      let wishlistData = JSON.parse(localStorage.getItem("wishlist"));
+      dispatch(setCartRedux(cartData));
+      dispatch(setReduxWishlist(wishlistData));
+    }
+  }, []);
+
   const setQuantity = (id, quantity) => {
     if (quantity >= 1) {
       const item = cartProducts.filter((elm) => elm.id == id)[0];
@@ -27,6 +76,106 @@ export default function ShopCart() {
   const addGiftRef = useRef();
   const addShipingRef = useRef();
 
+  const calculateCart = () => {
+    let cartProducts = cartData;
+    let sumAmount = 0;
+    let actualOrder = 0;
+
+    //find and create array
+    cartProducts &&
+      cartProducts.length > 0 &&
+      cartProducts.forEach(function (item, index) {
+        let price = getPrice2(item);
+        let actualPrice = getPrice3(item);
+        sumAmount += parseInt(price) * item.quantity;
+        actualOrder += parseInt(actualPrice) * item.quantity;
+      });
+
+    setState({
+      ...state,
+      loading: false,
+      cartProducts: cartProducts,
+      sumAmount: sumAmount,
+      actualOrder: actualOrder,
+    });
+    // props.setTotalRedux(sumAmount);
+  };
+
+  const getPrice2 = (product) => {
+    if (product.selectedVariation.id) {
+      if (product.selectedVariation.salePrice == 0) {
+        return product.selectedVariation.price;
+      } else {
+        return product.selectedVariation.salePrice;
+      }
+    } else {
+      if (product.product) {
+        if (product.product.salePrice == 0) {
+          return product.product.price;
+        } else {
+          return product.product.salePrice;
+        }
+      } else {
+        return 0;
+      }
+    }
+  };
+  const getPrice3 = (product) => {
+    if (product.selectedVariation.id) {
+      return product.selectedVariation.price;
+    } else {
+      if (product.product) {
+        return product.product.price;
+      } else {
+        return 0;
+      }
+    }
+  };
+  const getPrice4 = (product) => {
+    if (product.selectedVariation.id) {
+      if (product.selectedVariation.salePrice == 0) {
+        return product.selectedVariation.price;
+      } else {
+        return product.selectedVariation.salePrice;
+      }
+    } else {
+      if (product.product) {
+        if (product.product.salePrice == 0) {
+          return product.product.price;
+        } else {
+          return product.product.salePrice;
+        }
+      } else {
+        return 0;
+      }
+    }
+  };
+
+  const getPrice5 = (product) => {
+    if (product.selectedVariation.id) {
+      if (product.selectedVariation.salePrice == 0) {
+        return "";
+      } else {
+        return `৳ ${product.selectedVariation.price}`;
+      }
+    } else {
+      if (product.product) {
+        if (product.product.salePrice == 0) {
+          return "";
+        } else {
+          return `৳ ${product.product.price}`;
+        }
+      } else {
+        return 0;
+      }
+    }
+  };
+
+  const singleProductTotal = (product) => {
+    let total = parseInt(getPrice4(product)) * product.quantity;
+    return total;
+  };
+
   return (
     <div className="modal fullRight fade modal-shopping-cart" id="shoppingCart">
       <div className="modal-dialog">
@@ -41,8 +190,31 @@ export default function ShopCart() {
           <div className="wrap">
             <div className="tf-mini-cart-threshold">
               <div className="tf-progress-bar">
-                <span style={{ width: "50%" }}>
-                  <div className="progress-car">
+                <span
+                  style={{
+                    width:
+                      parseInt(state.sumAmount) >= parseInt(freeShipping)
+                        ? "100%"
+                        : `${(state.sumAmount / freeShipping) * 100}%`,
+                    backgroundColor:
+                      parseInt(state.sumAmount) >= parseInt(freeShipping)
+                        ? "green"
+                        : `red`,
+                  }}
+                >
+                  <div
+                    className="progress-car"
+                    style={{
+                      color:
+                        parseInt(state.sumAmount) >= parseInt(freeShipping)
+                          ? "green"
+                          : `red`,
+                      borderColor:
+                        parseInt(state.sumAmount) >= parseInt(freeShipping)
+                          ? "green"
+                          : `red`,
+                    }}
+                  >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width={21}
@@ -59,84 +231,212 @@ export default function ShopCart() {
                   </div>
                 </span>
               </div>
-              <div className="tf-progress-msg">
-                Buy <span className="price fw-6">$75.00</span> more to enjoy
-                <span className="fw-6">Free Shipping</span>
-              </div>
+              {state.sumAmount < freeShipping ? (
+                <div
+                  className="tf-progress-msg"
+                  style={{ color: "#ff8084", fontWeight: "bold" }}
+                >
+                  Spend Tk {freeShipping - state.sumAmount} more to enjoy Free
+                  delivery
+                </div>
+              ) : (
+                <div
+                  className="tf-progress-msg"
+                  style={{ color: "green", fontWeight: "bold" }}
+                >
+                  hooray! You will get free delivery
+                </div>
+              )}
             </div>
             <div className="tf-mini-cart-wrap">
               <div className="tf-mini-cart-main">
                 <div className="tf-mini-cart-sroll">
                   <div className="tf-mini-cart-items">
-                    {cartProducts.map((elm, i) => (
-                      <div key={i} className="tf-mini-cart-item">
-                        <div className="tf-mini-cart-image">
-                          <Link href={`/product-detail/${elm.id}`}>
-                            <Image
-                              alt="image"
-                              src={elm.imgSrc}
-                              width={668}
-                              height={932}
-                              style={{ objectFit: "cover" }}
-                            />
-                          </Link>
-                        </div>
-                        <div className="tf-mini-cart-info">
-                          <Link
-                            className="title link"
-                            href={`/product-detail/${elm.id}`}
-                          >
-                            {elm.title}
-                          </Link>
-                          <div className="meta-variant">Light gray</div>
-                          <div className="price fw-6">
-                            ${elm.price?.toFixed(2)}
-                          </div>
-                          <div className="tf-mini-cart-btns">
-                            <div className="wg-quantity small">
-                              <span
-                                className="btn-quantity minus-btn"
-                                onClick={() =>
-                                  setQuantity(elm.id, elm.quantity - 1)
+                    {cartData.length > 0 &&
+                      cartData.map((item, i) => (
+                        <div key={i} className="tf-mini-cart-item">
+                          <div className="tf-mini-cart-image">
+                            <Link
+                              href={`/product-swatch-image-rounded/${item.productId}`}
+                            >
+                              <Image
+                                alt="image"
+                                src={
+                                  item.selectedVariation &&
+                                  item.selectedVariation.id &&
+                                  item.selectedVariation.pictures &&
+                                  item.selectedVariation.pictures.length > 0
+                                    ? item.selectedVariation.pictures[0]
+                                    : item.product.pictures[0]
                                 }
-                              >
-                                -
-                              </span>
-                              <input
-                                type="text"
-                                name="number"
-                                value={elm.quantity}
-                                min={1}
-                                onChange={(e) =>
-                                  setQuantity(elm.id, e.target.value / 1)
-                                }
+                                width={668}
+                                height={932}
+                                style={{ objectFit: "cover", borderRadius: 5 }}
                               />
-                              <span
-                                className="btn-quantity plus-btn"
-                                onClick={() =>
-                                  setQuantity(elm.id, elm.quantity + 1)
-                                }
+                            </Link>
+                          </div>
+                          <div className="tf-mini-cart-info">
+                            <div
+                              style={{
+                                display: "flex",
+                                flexDirection: "row",
+                                justifyContent: "space-between",
+                              }}
+                            >
+                              <Link
+                                className="title link"
+                                style={{ maxWidth: "60%" }}
+                                href={`/product-swatch-image-rounded/${item.productId}`}
                               >
-                                +
-                              </span>
+                                {item.product.name.length > 60 ? (
+                                  <div className="two-lines">
+                                    {item.product.name.slice(0, 40)}
+                                  </div>
+                                ) : (
+                                  <div className="two-lines">
+                                    {item.product.name}
+                                    <span style={{ color: "white" }}>
+                                      {" "}
+                                      000000000000
+                                    </span>
+                                  </div>
+                                )}
+                              </Link>
+                              <div>
+                                <div
+                                  className="price fw-6"
+                                  style={{
+                                    textAlign: "center",
+                                    marginTop: 3,
+                                    fontSize: 14,
+                                    fontWeight: "bold",
+                                  }}
+                                >
+                                  ৳ {getPrice4(item)}
+                                </div>
+                                <div
+                                  className="price fw-6"
+                                  style={{
+                                    textAlign: "center",
+                                    textDecoration: "line-through",
+
+                                    color: "gray",
+                                    fontSize: 11,
+                                  }}
+                                >
+                                  {getPrice5(item)}
+                                </div>
+                              </div>
                             </div>
                             <div
-                              className="tf-mini-cart-remove"
-                              style={{ cursor: "pointer" }}
-                              onClick={() => removeItem(elm.id)}
+                              style={{
+                                display: "flex",
+                                flexDirection: "row",
+                                justifyContent: "space-between",
+                              }}
                             >
-                              Remove
+                              <div
+                                className="meta-variant"
+                                style={{ marginTop: 5 }}
+                              >
+                                {" "}
+                                {item.selectedVariation &&
+                                  item.selectedVariation.id &&
+                                  item.selectedVariation.combination.map(
+                                    (comb, index) => (
+                                      <div
+                                        key={index}
+                                        style={{ marginTop: -5 }}
+                                      >
+                                        {item.product.savedAttributes.find(
+                                          (attr) => attr.id == comb.parentId
+                                        )
+                                          ? item.product.savedAttributes.find(
+                                              (attr) => attr.id == comb.parentId
+                                            ).name
+                                          : ""}
+                                        :{" "}
+                                        <span style={{ fontWeight: "bold" }}>
+                                          {comb.name}
+                                        </span>
+                                      </div>
+                                    )
+                                  )}
+                              </div>
+                            </div>
+                            <div
+                              style={{
+                                display: "flex",
+                                flexDirection: "row",
+                                justifyContent: "space-between",
+                                marginTop: 5,
+                              }}
+                            >
+                              <div
+                                className="tf-mini-cart-btns"
+                                style={{ marginTop: 0 }}
+                              >
+                                <div className="wg-quantity small">
+                                  <span
+                                    className="btn-quantity minus-btn"
+                                    onClick={() => {
+                                      decrementQuantityRedux(item);
+                                    }}
+                                  >
+                                    -
+                                  </span>
+                                  <input
+                                    type="text"
+                                    name="number"
+                                    value={item.quantity}
+                                    min={1}
+                                    onChange={(e) => {
+                                      setQuantityRedux(item, e.target.value);
+                                    }}
+                                  />
+                                  <span
+                                    className="btn-quantity plus-btn"
+                                    onClick={() => {
+                                      incrementQuantityRedux(item);
+                                    }}
+                                  >
+                                    +
+                                  </span>
+                                </div>
+                              </div>
+                              <div
+                                style={{ marginTop: 10, fontWeight: "bold" }}
+                              >
+                                Total: ৳{singleProductTotal(item)}
+                              </div>
+                            </div>
+                            <div>
+                              <div
+                                className="tf-mini-cart-remove"
+                                style={{
+                                  cursor: "pointer",
+                                  textDecoration: "underline",
+                                  marginTop: 10,
+                                  textAlign: "right",
+                                  fontSize: 12,
+                                  display: "inline-block",
+                                }}
+                                onClick={() => {
+                                  removeFromCartRedux(item);
+                                }}
+                              >
+                                Remove
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
 
-                    {!cartProducts.length && (
+                    {cartData.length == 0 && (
                       <div className="container">
                         <div className="row align-items-center mt-5 mb-5">
                           <div className="col-12 fs-18">
-                            Your shop cart is empty
+                            Your shopping cart is empty
                           </div>
                           <div className="col-12 mt-3">
                             <Link
@@ -150,62 +450,6 @@ export default function ShopCart() {
                         </div>
                       </div>
                     )}
-                  </div>
-                  <div className="tf-minicart-recommendations">
-                    <div className="tf-minicart-recommendations-heading">
-                      <div className="tf-minicart-recommendations-title">
-                        You may also like
-                      </div>
-                      <div className="sw-dots small style-2 cart-slide-pagination spdsc1" />
-                    </div>
-                    <Swiper
-                      dir="ltr"
-                      modules={[Pagination]}
-                      pagination={{
-                        clickable: true,
-                        clickable: true,
-                        el: ".spdsc1",
-                      }}
-                      className="swiper tf-cart-slide"
-                    >
-                      {products1.slice(0, 2).map((elm, i) => (
-                        <SwiperSlide key={i} className="swiper-slide">
-                          <div className="tf-minicart-recommendations-item">
-                            <div className="tf-minicart-recommendations-item-image">
-                              <Link href={`/product-detail/${elm.id}`}>
-                                <Image
-                                  alt="image"
-                                  src={elm.imgSrc}
-                                  width={720}
-                                  height={1005}
-                                />
-                              </Link>
-                            </div>
-                            <div className="tf-minicart-recommendations-item-infos flex-grow-1">
-                              <Link
-                                className="title"
-                                href={`/product-detail/${1}`}
-                              >
-                                {elm.title}
-                              </Link>
-                              <div className="price">
-                                ${elm.price.toFixed(2)}
-                              </div>
-                            </div>
-                            <div className="tf-minicart-recommendations-item-quickview">
-                              <a
-                                href="#quick_view"
-                                data-bs-toggle="modal"
-                                onClick={() => setQuickViewItem(elm)}
-                                className="btn-show-quickview quickview hover-tooltip"
-                              >
-                                <span className="icon icon-view" />
-                              </a>
-                            </div>
-                          </div>
-                        </SwiperSlide>
-                      ))}
-                    </Swiper>
                   </div>
                 </div>
               </div>
@@ -244,35 +488,15 @@ export default function ShopCart() {
                       />
                     </svg>
                   </div>
-                  <div
-                    className="tf-mini-cart-tool-btn btn-estimate-shipping"
-                    onClick={() => addShipingRef.current.classList.add("open")}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width={26}
-                      height={18}
-                      viewBox="0 0 26 18"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        clipRule="evenodd"
-                        d="M0 0.811989C0 0.36354 0.36354 0 0.811989 0H15.4278C15.8763 0 16.2398 0.36354 16.2398 0.811989V3.10596H21.0144C23.6241 3.10596 25.8643 5.05894 25.8643 7.61523V14.6414C25.8643 15.0899 25.5007 15.4534 25.0523 15.4534H23.545C23.2139 16.9115 21.9098 18 20.3514 18C18.7931 18 17.4889 16.9115 17.1578 15.4534H8.69534C8.36423 16.9115 7.0601 18 5.50175 18C3.9434 18 2.63927 16.9115 2.30815 15.4534H0.811989C0.36354 15.4534 0 15.0899 0 14.6414V0.811989ZM2.35089 13.8294C2.74052 12.4562 4.00366 11.4503 5.50175 11.4503C6.99983 11.4503 8.26298 12.4562 8.6526 13.8294H14.6158V1.62398H1.62398V13.8294H2.35089ZM16.2398 4.72994V7.95749H24.2403V7.61523C24.2403 6.08759 22.8649 4.72994 21.0144 4.72994H16.2398ZM24.2403 9.58147H16.2398V13.8294H17.2006C17.5902 12.4562 18.8533 11.4503 20.3514 11.4503C21.8495 11.4503 23.1126 12.4562 23.5023 13.8294H24.2403V9.58147ZM5.50175 13.0743C4.58999 13.0743 3.85087 13.8134 3.85087 14.7251C3.85087 15.6369 4.58999 16.376 5.50175 16.376C6.41351 16.376 7.15263 15.6369 7.15263 14.7251C7.15263 13.8134 6.41351 13.0743 5.50175 13.0743ZM20.3514 13.0743C19.4397 13.0743 18.7005 13.8134 18.7005 14.7251C18.7005 15.6369 19.4397 16.376 20.3514 16.376C21.2632 16.376 22.0023 15.6369 22.0023 14.7251C22.0023 13.8134 21.2632 13.0743 20.3514 13.0743Z"
-                      />
-                    </svg>
-                  </div>
                 </div>
                 <div className="tf-mini-cart-bottom-wrap">
                   <div className="tf-cart-totals-discounts">
                     <div className="tf-cart-total">Subtotal</div>
                     <div className="tf-totals-total-value fw-6">
-                      ${totalPrice.toFixed(2)} USD
+                      ৳ {state.sumAmount}
                     </div>
                   </div>
-                  <div className="tf-cart-tax">
-                    Taxes and <a href="#">shipping</a> calculated at checkout
-                  </div>
+
                   <div className="tf-mini-cart-line" />
                   <div className="tf-cart-checkbox">
                     <div className="tf-checkbox-wrapp">
@@ -287,7 +511,7 @@ export default function ShopCart() {
                       </div>
                     </div>
                     <label htmlFor="CartDrawer-Form_agree">
-                      I agree with the
+                      I agree with the{" "}
                       <a href="#" title="Terms of Service">
                         terms and conditions
                       </a>
@@ -405,201 +629,25 @@ export default function ShopCart() {
                   </div>
                 </form>
               </div>
-              <div
-                className="tf-mini-cart-tool-openable estimate-shipping"
-                ref={addShipingRef}
-              >
-                <div
-                  className="overplay tf-mini-cart-tool-close"
-                  onClick={() => addShipingRef.current.classList.remove("open")}
-                />
-                <div className="tf-mini-cart-tool-content">
-                  <div className="tf-mini-cart-tool-text">
-                    <div className="icon">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width={21}
-                        height={15}
-                        viewBox="0 0 21 15"
-                        fill="currentColor"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          clipRule="evenodd"
-                          d="M0.441406 1.13155C0.441406 0.782753 0.724159 0.5 1.07295 0.5H12.4408C12.7896 0.5 13.0724 0.782753 13.0724 1.13155V2.91575H16.7859C18.8157 2.91575 20.5581 4.43473 20.5581 6.42296V11.8878C20.5581 12.2366 20.2753 12.5193 19.9265 12.5193H18.7542C18.4967 13.6534 17.4823 14.5 16.2703 14.5C15.0582 14.5 14.0439 13.6534 13.7864 12.5193H7.20445C6.94692 13.6534 5.93259 14.5 4.72054 14.5C3.50849 14.5 2.49417 13.6534 2.23664 12.5193H1.07295C0.724159 12.5193 0.441406 12.2366 0.441406 11.8878V1.13155ZM2.26988 11.2562C2.57292 10.1881 3.55537 9.40578 4.72054 9.40578C5.88572 9.40578 6.86817 10.1881 7.17121 11.2562H11.8093V1.76309H1.7045V11.2562H2.26988ZM13.0724 4.17884V6.68916H19.295V6.42296C19.295 5.2348 18.2252 4.17884 16.7859 4.17884H13.0724ZM19.295 7.95226H13.0724V11.2562H13.8196C14.1227 10.1881 15.1051 9.40578 16.2703 9.40578C17.4355 9.40578 18.4179 10.1881 18.7209 11.2562H19.295V7.95226ZM4.72054 10.6689C4.0114 10.6689 3.43652 11.2437 3.43652 11.9529C3.43652 12.662 4.0114 13.2369 4.72054 13.2369C5.42969 13.2369 6.00456 12.662 6.00456 11.9529C6.00456 11.2437 5.42969 10.6689 4.72054 10.6689ZM16.2703 10.6689C15.5611 10.6689 14.9863 11.2437 14.9863 11.9529C14.9863 12.662 15.5611 13.2369 16.2703 13.2369C16.9794 13.2369 17.5543 12.662 17.5543 11.9529C17.5543 11.2437 16.9794 10.6689 16.2703 10.6689Z"
-                        />
-                      </svg>
-                    </div>
-                    <span className="fw-6">Estimate Shipping</span>
-                  </div>
-                  <div className="field">
-                    <p>Country</p>
-                    <select
-                      className="tf-select w-100"
-                      id="ShippingCountry_CartDrawer-Form"
-                      name="address[country]"
-                      data-default=""
-                    >
-                      <option value="---" data-provinces="[]">
-                        ---
-                      </option>
-                      <option
-                        value="Australia"
-                        data-provinces="[['Australian Capital Territory','Australian Capital Territory'],['New South Wales','New South Wales'],['Northern Territory','Northern Territory'],['Queensland','Queensland'],['South Australia','South Australia'],['Tasmania','Tasmania'],['Victoria','Victoria'],['Western Australia','Western Australia']]"
-                      >
-                        Australia
-                      </option>
-                      <option value="Austria" data-provinces="[]">
-                        Austria
-                      </option>
-                      <option value="Belgium" data-provinces="[]">
-                        Belgium
-                      </option>
-                      <option
-                        value="Canada"
-                        data-provinces="[['Alberta','Alberta'],['British Columbia','British Columbia'],['Manitoba','Manitoba'],['New Brunswick','New Brunswick'],['Newfoundland and Labrador','Newfoundland and Labrador'],['Northwest Territories','Northwest Territories'],['Nova Scotia','Nova Scotia'],['Nunavut','Nunavut'],['Ontario','Ontario'],['Prince Edward Island','Prince Edward Island'],['Quebec','Quebec'],['Saskatchewan','Saskatchewan'],['Yukon','Yukon']]"
-                      >
-                        Canada
-                      </option>
-                      <option value="Czech Republic" data-provinces="[]">
-                        Czechia
-                      </option>
-                      <option value="Denmark" data-provinces="[]">
-                        Denmark
-                      </option>
-                      <option value="Finland" data-provinces="[]">
-                        Finland
-                      </option>
-                      <option value="France" data-provinces="[]">
-                        France
-                      </option>
-                      <option value="Germany" data-provinces="[]">
-                        Germany
-                      </option>
-                      <option
-                        value="Hong Kong"
-                        data-provinces="[['Hong Kong Island','Hong Kong Island'],['Kowloon','Kowloon'],['New Territories','New Territories']]"
-                      >
-                        Hong Kong SAR
-                      </option>
-                      <option
-                        value="Ireland"
-                        data-provinces="[['Carlow','Carlow'],['Cavan','Cavan'],['Clare','Clare'],['Cork','Cork'],['Donegal','Donegal'],['Dublin','Dublin'],['Galway','Galway'],['Kerry','Kerry'],['Kildare','Kildare'],['Kilkenny','Kilkenny'],['Laois','Laois'],['Leitrim','Leitrim'],['Limerick','Limerick'],['Longford','Longford'],['Louth','Louth'],['Mayo','Mayo'],['Meath','Meath'],['Monaghan','Monaghan'],['Offaly','Offaly'],['Roscommon','Roscommon'],['Sligo','Sligo'],['Tipperary','Tipperary'],['Waterford','Waterford'],['Westmeath','Westmeath'],['Wexford','Wexford'],['Wicklow','Wicklow']]"
-                      >
-                        Ireland
-                      </option>
-                      <option value="Israel" data-provinces="[]">
-                        Israel
-                      </option>
-                      <option
-                        value="Italy"
-                        data-provinces="[['Agrigento','Agrigento'],['Alessandria','Alessandria'],['Ancona','Ancona'],['Aosta','Aosta Valley'],['Arezzo','Arezzo'],['Ascoli Piceno','Ascoli Piceno'],['Asti','Asti'],['Avellino','Avellino'],['Bari','Bari'],['Barletta-Andria-Trani','Barletta-Andria-Trani'],['Belluno','Belluno'],['Benevento','Benevento'],['Bergamo','Bergamo'],['Biella','Biella'],['Bologna','Bologna'],['Bolzano','South Tyrol'],['Brescia','Brescia'],['Brindisi','Brindisi'],['Cagliari','Cagliari'],['Caltanissetta','Caltanissetta'],['Campobasso','Campobasso'],['Carbonia-Iglesias','Carbonia-Iglesias'],['Caserta','Caserta'],['Catania','Catania'],['Catanzaro','Catanzaro'],['Chieti','Chieti'],['Como','Como'],['Cosenza','Cosenza'],['Cremona','Cremona'],['Crotone','Crotone'],['Cuneo','Cuneo'],['Enna','Enna'],['Fermo','Fermo'],['Ferrara','Ferrara'],['Firenze','Florence'],['Foggia','Foggia'],['Forlì-Cesena','Forlì-Cesena'],['Frosinone','Frosinone'],['Genova','Genoa'],['Gorizia','Gorizia'],['Grosseto','Grosseto'],['Imperia','Imperia'],['Isernia','Isernia'],['L'Aquila','L’Aquila'],['La Spezia','La Spezia'],['Latina','Latina'],['Lecce','Lecce'],['Lecco','Lecco'],['Livorno','Livorno'],['Lodi','Lodi'],['Lucca','Lucca'],['Macerata','Macerata'],['Mantova','Mantua'],['Massa-Carrara','Massa and Carrara'],['Matera','Matera'],['Medio Campidano','Medio Campidano'],['Messina','Messina'],['Milano','Milan'],['Modena','Modena'],['Monza e Brianza','Monza and Brianza'],['Napoli','Naples'],['Novara','Novara'],['Nuoro','Nuoro'],['Ogliastra','Ogliastra'],['Olbia-Tempio','Olbia-Tempio'],['Oristano','Oristano'],['Padova','Padua'],['Palermo','Palermo'],['Parma','Parma'],['Pavia','Pavia'],['Perugia','Perugia'],['Pesaro e Urbino','Pesaro and Urbino'],['Pescara','Pescara'],['Piacenza','Piacenza'],['Pisa','Pisa'],['Pistoia','Pistoia'],['Pordenone','Pordenone'],['Potenza','Potenza'],['Prato','Prato'],['Ragusa','Ragusa'],['Ravenna','Ravenna'],['Reggio Calabria','Reggio Calabria'],['Reggio Emilia','Reggio Emilia'],['Rieti','Rieti'],['Rimini','Rimini'],['Roma','Rome'],['Rovigo','Rovigo'],['Salerno','Salerno'],['Sassari','Sassari'],['Savona','Savona'],['Siena','Siena'],['Siracusa','Syracuse'],['Sondrio','Sondrio'],['Taranto','Taranto'],['Teramo','Teramo'],['Terni','Terni'],['Torino','Turin'],['Trapani','Trapani'],['Trento','Trentino'],['Treviso','Treviso'],['Trieste','Trieste'],['Udine','Udine'],['Varese','Varese'],['Venezia','Venice'],['Verbano-Cusio-Ossola','Verbano-Cusio-Ossola'],['Vercelli','Vercelli'],['Verona','Verona'],['Vibo Valentia','Vibo Valentia'],['Vicenza','Vicenza'],['Viterbo','Viterbo']]"
-                      >
-                        Italy
-                      </option>
-                      <option
-                        value="Japan"
-                        data-provinces="[['Aichi','Aichi'],['Akita','Akita'],['Aomori','Aomori'],['Chiba','Chiba'],['Ehime','Ehime'],['Fukui','Fukui'],['Fukuoka','Fukuoka'],['Fukushima','Fukushima'],['Gifu','Gifu'],['Gunma','Gunma'],['Hiroshima','Hiroshima'],['Hokkaidō','Hokkaido'],['Hyōgo','Hyogo'],['Ibaraki','Ibaraki'],['Ishikawa','Ishikawa'],['Iwate','Iwate'],['Kagawa','Kagawa'],['Kagoshima','Kagoshima'],['Kanagawa','Kanagawa'],['Kumamoto','Kumamoto'],['Kyōto','Kyoto'],['Kōchi','Kochi'],['Mie','Mie'],['Miyagi','Miyagi'],['Miyazaki','Miyazaki'],['Nagano','Nagano'],['Nagasaki','Nagasaki'],['Nara','Nara'],['Niigata','Niigata'],['Okayama','Okayama'],['Okinawa','Okinawa'],['Saga','Saga'],['Saitama','Saitama'],['Shiga','Shiga'],['Shimane','Shimane'],['Shizuoka','Shizuoka'],['Tochigi','Tochigi'],['Tokushima','Tokushima'],['Tottori','Tottori'],['Toyama','Toyama'],['Tōkyō','Tokyo'],['Wakayama','Wakayama'],['Yamagata','Yamagata'],['Yamaguchi','Yamaguchi'],['Yamanashi','Yamanashi'],['Ōita','Oita'],['Ōsaka','Osaka']]"
-                      >
-                        Japan
-                      </option>
-                      <option
-                        value="Malaysia"
-                        data-provinces="[['Johor','Johor'],['Kedah','Kedah'],['Kelantan','Kelantan'],['Kuala Lumpur','Kuala Lumpur'],['Labuan','Labuan'],['Melaka','Malacca'],['Negeri Sembilan','Negeri Sembilan'],['Pahang','Pahang'],['Penang','Penang'],['Perak','Perak'],['Perlis','Perlis'],['Putrajaya','Putrajaya'],['Sabah','Sabah'],['Sarawak','Sarawak'],['Selangor','Selangor'],['Terengganu','Terengganu']]"
-                      >
-                        Malaysia
-                      </option>
-                      <option value="Netherlands" data-provinces="[]">
-                        Netherlands
-                      </option>
-                      <option
-                        value="New Zealand"
-                        data-provinces="[['Auckland','Auckland'],['Bay of Plenty','Bay of Plenty'],['Canterbury','Canterbury'],['Chatham Islands','Chatham Islands'],['Gisborne','Gisborne'],['Hawke's Bay','Hawke’s Bay'],['Manawatu-Wanganui','Manawatū-Whanganui'],['Marlborough','Marlborough'],['Nelson','Nelson'],['Northland','Northland'],['Otago','Otago'],['Southland','Southland'],['Taranaki','Taranaki'],['Tasman','Tasman'],['Waikato','Waikato'],['Wellington','Wellington'],['West Coast','West Coast']]"
-                      >
-                        New Zealand
-                      </option>
-                      <option value="Norway" data-provinces="[]">
-                        Norway
-                      </option>
-                      <option value="Poland" data-provinces="[]">
-                        Poland
-                      </option>
-                      <option
-                        value="Portugal"
-                        data-provinces="[['Aveiro','Aveiro'],['Açores','Azores'],['Beja','Beja'],['Braga','Braga'],['Bragança','Bragança'],['Castelo Branco','Castelo Branco'],['Coimbra','Coimbra'],['Faro','Faro'],['Guarda','Guarda'],['Leiria','Leiria'],['Lisboa','Lisbon'],['Madeira','Madeira'],['Portalegre','Portalegre'],['Porto','Porto'],['Santarém','Santarém'],['Setúbal','Setúbal'],['Viana do Castelo','Viana do Castelo'],['Vila Real','Vila Real'],['Viseu','Viseu'],['Évora','Évora']]"
-                      >
-                        Portugal
-                      </option>
-                      <option value="Singapore" data-provinces="[]">
-                        Singapore
-                      </option>
-                      <option
-                        value="South Korea"
-                        data-provinces="[['Busan','Busan'],['Chungbuk','North Chungcheong'],['Chungnam','South Chungcheong'],['Daegu','Daegu'],['Daejeon','Daejeon'],['Gangwon','Gangwon'],['Gwangju','Gwangju City'],['Gyeongbuk','North Gyeongsang'],['Gyeonggi','Gyeonggi'],['Gyeongnam','South Gyeongsang'],['Incheon','Incheon'],['Jeju','Jeju'],['Jeonbuk','North Jeolla'],['Jeonnam','South Jeolla'],['Sejong','Sejong'],['Seoul','Seoul'],['Ulsan','Ulsan']]"
-                      >
-                        South Korea
-                      </option>
-                      <option
-                        value="Spain"
-                        data-provinces="[['A Coruña','A Coruña'],['Albacete','Albacete'],['Alicante','Alicante'],['Almería','Almería'],['Asturias','Asturias Province'],['Badajoz','Badajoz'],['Balears','Balears Province'],['Barcelona','Barcelona'],['Burgos','Burgos'],['Cantabria','Cantabria Province'],['Castellón','Castellón'],['Ceuta','Ceuta'],['Ciudad Real','Ciudad Real'],['Cuenca','Cuenca'],['Cáceres','Cáceres'],['Cádiz','Cádiz'],['Córdoba','Córdoba'],['Girona','Girona'],['Granada','Granada'],['Guadalajara','Guadalajara'],['Guipúzcoa','Gipuzkoa'],['Huelva','Huelva'],['Huesca','Huesca'],['Jaén','Jaén'],['La Rioja','La Rioja Province'],['Las Palmas','Las Palmas'],['León','León'],['Lleida','Lleida'],['Lugo','Lugo'],['Madrid','Madrid Province'],['Melilla','Melilla'],['Murcia','Murcia'],['Málaga','Málaga'],['Navarra','Navarra'],['Ourense','Ourense'],['Palencia','Palencia'],['Pontevedra','Pontevedra'],['Salamanca','Salamanca'],['Santa Cruz de Tenerife','Santa Cruz de Tenerife'],['Segovia','Segovia'],['Sevilla','Seville'],['Soria','Soria'],['Tarragona','Tarragona'],['Teruel','Teruel'],['Toledo','Toledo'],['Valencia','Valencia'],['Valladolid','Valladolid'],['Vizcaya','Biscay'],['Zamora','Zamora'],['Zaragoza','Zaragoza'],['Álava','Álava'],['Ávila','Ávila']]"
-                      >
-                        Spain
-                      </option>
-                      <option value="Sweden" data-provinces="[]">
-                        Sweden
-                      </option>
-                      <option value="Switzerland" data-provinces="[]">
-                        Switzerland
-                      </option>
-                      <option
-                        value="United Arab Emirates"
-                        data-provinces="[['Abu Dhabi','Abu Dhabi'],['Ajman','Ajman'],['Dubai','Dubai'],['Fujairah','Fujairah'],['Ras al-Khaimah','Ras al-Khaimah'],['Sharjah','Sharjah'],['Umm al-Quwain','Umm al-Quwain']]"
-                      >
-                        United Arab Emirates
-                      </option>
-                      <option
-                        value="United Kingdom"
-                        data-provinces="[['British Forces','British Forces'],['England','England'],['Northern Ireland','Northern Ireland'],['Scotland','Scotland'],['Wales','Wales']]"
-                      >
-                        United Kingdom
-                      </option>
-                      <option
-                        value="United States"
-                        data-provinces="[['Alabama','Alabama'],['Alaska','Alaska'],['American Samoa','American Samoa'],['Arizona','Arizona'],['Arkansas','Arkansas'],['Armed Forces Americas','Armed Forces Americas'],['Armed Forces Europe','Armed Forces Europe'],['Armed Forces Pacific','Armed Forces Pacific'],['California','California'],['Colorado','Colorado'],['Connecticut','Connecticut'],['Delaware','Delaware'],['District of Columbia','Washington DC'],['Federated States of Micronesia','Micronesia'],['Florida','Florida'],['Georgia','Georgia'],['Guam','Guam'],['Hawaii','Hawaii'],['Idaho','Idaho'],['Illinois','Illinois'],['Indiana','Indiana'],['Iowa','Iowa'],['Kansas','Kansas'],['Kentucky','Kentucky'],['Louisiana','Louisiana'],['Maine','Maine'],['Marshall Islands','Marshall Islands'],['Maryland','Maryland'],['Massachusetts','Massachusetts'],['Michigan','Michigan'],['Minnesota','Minnesota'],['Mississippi','Mississippi'],['Missouri','Missouri'],['Montana','Montana'],['Nebraska','Nebraska'],['Nevada','Nevada'],['New Hampshire','New Hampshire'],['New Jersey','New Jersey'],['New Mexico','New Mexico'],['New York','New York'],['North Carolina','North Carolina'],['North Dakota','North Dakota'],['Northern Mariana Islands','Northern Mariana Islands'],['Ohio','Ohio'],['Oklahoma','Oklahoma'],['Oregon','Oregon'],['Palau','Palau'],['Pennsylvania','Pennsylvania'],['Puerto Rico','Puerto Rico'],['Rhode Island','Rhode Island'],['South Carolina','South Carolina'],['South Dakota','South Dakota'],['Tennessee','Tennessee'],['Texas','Texas'],['Utah','Utah'],['Vermont','Vermont'],['Virgin Islands','U.S. Virgin Islands'],['Virginia','Virginia'],['Washington','Washington'],['West Virginia','West Virginia'],['Wisconsin','Wisconsin'],['Wyoming','Wyoming']]"
-                      >
-                        United States
-                      </option>
-                      <option value="Vietnam" data-provinces="[]">
-                        Vietnam
-                      </option>
-                    </select>
-                  </div>
-                  <div className="field">
-                    <p>Zip code</p>
-                    <input type="text" name="text" placeholder="" />
-                  </div>
-                  <div className="tf-cart-tool-btns">
-                    <a
-                      href="#"
-                      className="tf-btn fw-6 justify-content-center btn-fill w-100 animate-hover-btn radius-3"
-                    >
-                      <span>Estimate</span>
-                    </a>
-                    <div
-                      className="tf-mini-cart-tool-primary text-center fw-6 w-100 tf-mini-cart-tool-close"
-                      onClick={() =>
-                        addShipingRef.current.classList.remove("open")
-                      }
-                    >
-                      Cancel
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
   );
-}
+};
+
+const mapStateToProps = (state) => {
+  return {
+    freeShipping: state.cart.freeShipping,
+    cartData: state.cart.cartData,
+    currentUser: state.users.currentUser,
+  };
+};
+export default connect(mapStateToProps, {
+  setCartRedux,
+  incrementQuantityRedux,
+  decrementQuantityRedux,
+  removeFromCartRedux,
+  setQuantityRedux,
+})(ShopCart);

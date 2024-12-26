@@ -2,11 +2,21 @@
 
 import { ProductCard } from "@/components/shopCards/ProductCard";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { products1 } from "@/data/products";
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
-const Products = ({ latestProducts }) => {
+import { addToWishlistRedux, removeFromWishlistRedux } from "@/actions";
+import toast from "react-hot-toast";
+const Products = ({
+  latestProducts,
+  addToWishlistRedux,
+  removeFromWishlistRedux,
+  currentUser,
+  wishlist,
+}) => {
+  const router = useRouter();
   const getPrice = (product) => {
     if (product.displayedVariations.length > 0) {
       if (product.displayedVariations[0].salePrice == 0) {
@@ -162,13 +172,15 @@ const Products = ({ latestProducts }) => {
                         position: "relative",
                         border: "1px solid gainsboro",
                       }}
+                      onClick={() => {
+                        router.push(
+                          `/product-swatch-image-rounded/${product.id}`
+                        );
+                      }}
                       key={i}
                     >
                       <div className="card-product-wrapper">
-                        <a
-                          href={product.id}
-                          className="product-img fixed-height"
-                        >
+                        <a className="product-img fixed-height">
                           <Image
                             className="lazyload img-product"
                             data-src={product.imgSrc}
@@ -202,32 +214,41 @@ const Products = ({ latestProducts }) => {
                         </a>
                         <div className="list-product-btn">
                           <a
-                            onClick={() => {}}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (
+                                wishlist &&
+                                wishlist.length > 0 &&
+                                wishlist.find((wish) => wish.id == product.id)
+                              ) {
+                                removeFromWishlistRedux(product, currentUser);
+                                toast("Item removed from wishlist");
+                              } else {
+                                addToWishlistRedux(product, currentUser);
+                                toast("Item added to Wishlist");
+                              }
+                            }}
                             className="box-icon bg_white wishlist btn-icon-action"
                           >
-                            <span className={`icon icon-heart`} />
-                            <span className="tooltip">Add to Wishlist</span>
+                            <span
+                              className={`icon icon-heart`}
+                              style={{
+                                color:
+                                  wishlist &&
+                                  wishlist.length > 0 &&
+                                  wishlist.find((wish) => wish.id == product.id)
+                                    ? "red"
+                                    : "",
+                              }}
+                            />
+                            <span className="tooltip">
+                              {wishlist &&
+                              wishlist.length > 0 &&
+                              wishlist.find((wish) => wish.id == product.id)
+                                ? "Added to Wishlist"
+                                : "Add to Wishlist"}
+                            </span>
                             <span className="icon icon-delete" />
-                          </a>
-                          <a
-                            href="#compare"
-                            data-bs-toggle="offcanvas"
-                            aria-controls="offcanvasLeft"
-                            onClick={() => {}}
-                            className="box-icon bg_white compare btn-icon-action"
-                          >
-                            <span className={`icon icon-compare`} />
-                            <span className="tooltip">Add to Compare</span>
-                            <span className="icon icon-check" />
-                          </a>
-                          <a
-                            href="#quick_view"
-                            onClick={() => {}}
-                            data-bs-toggle="modal"
-                            className="box-icon bg_white quickview tf-btn-loading"
-                          >
-                            <span className="icon icon-view" />
-                            <span className="tooltip">Quick View</span>
                           </a>
                         </div>
                       </div>
@@ -295,6 +316,12 @@ const Products = ({ latestProducts }) => {
 };
 
 const mapStateToProps = (state) => {
-  return {};
+  return {
+    currentUser: state.users.currentUser,
+    wishlist: state.wishlist.wishlist,
+  };
 };
-export default connect(mapStateToProps, {})(Products);
+export default connect(mapStateToProps, {
+  addToWishlistRedux,
+  removeFromWishlistRedux,
+})(Products);

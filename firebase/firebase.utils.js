@@ -12,6 +12,7 @@ import {
   orderBy,
   limit,
   startAfter as startAfterFn,
+  updateDoc,
 } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
@@ -109,6 +110,121 @@ export const getAllDeviceTokens = async () => {
   } catch (error) {
     alert(error);
     return [];
+  }
+};
+
+export const addToWishlist = async (wishlistObj, user) => {
+  if (!user.uid) {
+    return [];
+  }
+  const wishlistRef = firestore().doc(`wishlists/${user.uid}`);
+  const snapShot = await wishlistRef.get();
+  if (!snapShot.exists) {
+    try {
+      await wishlistRef.set({
+        wishlist: [wishlistObj],
+      });
+      const updatedSnapshot = await wishlistRef.get();
+      return updatedSnapshot.data().wishlist;
+    } catch (error) {
+      console.log("error creating cartProduct", error.message);
+      return [];
+    }
+  } else {
+    if (snapShot.data().wishlist.find((wish) => wish.id == wishlistObj.id)) {
+      const updatedSnapshot = await wishlistRef.get();
+      return updatedSnapshot.data().wishlist;
+    } else {
+      await wishlistRef.update({
+        wishlist: [...snapShot.data().wishlist, wishlistObj],
+      });
+      const updatedSnapshot = await wishlistRef.get();
+      return updatedSnapshot.data().wishlist;
+    }
+  }
+};
+export const addToWishlist2 = (wishlistObj) => {
+  let wishlist = {
+    id: wishlistObj.id,
+    name: wishlistObj.name,
+    pictures: wishlistObj.pictures,
+    pictures2: wishlistObj.pictures2,
+    price: wishlistObj.price,
+    salePrice: wishlistObj.salePrice,
+  };
+
+  // Retrieve the wishlist from localStorage or initialize as an empty array
+  const currentWishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
+
+  // Check if the item already exists in the wishlist
+  const isAlreadyInWishlist = currentWishlist.some(
+    (wish) => wish.id === wishlist.id
+  );
+
+  if (isAlreadyInWishlist) {
+    // Return the current wishlist as no changes are needed
+    return currentWishlist;
+  } else {
+    // Add the new item to the wishlist
+    const updatedWishlist = [...currentWishlist, wishlist];
+
+    // Save the updated wishlist back to localStorage
+    localStorage.setItem("wishlist", JSON.stringify(updatedWishlist));
+
+    // Return the updated wishlist
+    return updatedWishlist;
+  }
+};
+
+export const removeFromWishlist = async (item, user) => {
+  if (!user.uid) {
+    return [];
+  }
+  const wishlistRef = firestore().doc(`wishlists/${user.uid}`);
+  const snapShot = await wishlistRef.get();
+
+  await wishlistRef.update({
+    wishlist: snapShot.data().wishlist.filter((wishlistItem) => {
+      if (wishlistItem.id == item.id) {
+        return false;
+      } else {
+        return true;
+      }
+    }),
+  });
+  const updatedSnapshot = await wishlistRef.get();
+  return updatedSnapshot.data().wishlist;
+};
+export const removeFromWishlist2 = (item) => {
+  // Retrieve the current wishlist from localStorage
+  const currentWishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
+  // Filter out the item to be removed
+  const updatedWishlist = currentWishlist.filter(
+    (wishlistItem) => wishlistItem.id !== item.id
+  );
+  // Update the localStorage with the new wishlist
+  localStorage.setItem("wishlist", JSON.stringify(updatedWishlist));
+  // Return the updated wishlist
+  return updatedWishlist;
+};
+
+export const matchCoupon = async (number) => {
+  const couponsRef = collection(firestore, "coupons");
+  const q = query(couponsRef, where("name", "==", number));
+  try {
+    const querySnapshot = await getDocs(q);
+    let coupon = null;
+
+    querySnapshot.forEach((doc) => {
+      // Assuming there is only one match, assign the first match to coupon
+      if (!coupon) {
+        coupon = doc.data();
+      }
+    });
+    return coupon;
+  } catch (error) {
+    console.error("Error matching coupon:", error);
+    return null;
   }
 };
 
@@ -1493,14 +1609,14 @@ export const getSingleCategoryProducts = async (categories, startAfter) => {
       where("checkedValues", "array-contains-any", categories),
       orderBy("id", "desc"),
       startAfter(startAfter),
-      limit(10)
+      limit(20)
     );
   } else {
     productsQuery = query(
       productsCollectionRef,
       where("checkedValues", "array-contains-any", categories),
       orderBy("id", "desc"),
-      limit(10)
+      limit(20)
     );
   }
   const querySnapshot = await getDocs(productsQuery);
@@ -1513,6 +1629,180 @@ export const getSingleCategoryProducts = async (categories, startAfter) => {
   console.log(productsArray);
   console.log(lastProduct);
   return { productsArray, lastProduct: JSON.stringify(lastProduct) };
+};
+
+export const updateSingleProduct = async (product) => {
+  const productRef = doc(firestore, `products/${product.id}`);
+  console.log(product);
+  try {
+    // Update the document with the provided product data
+    await updateDoc(productRef, { ...product });
+
+    // Fetch the updated document
+    const productSnapshot = await getDoc(productRef);
+    return productSnapshot.data();
+  } catch (error) {
+    alert(error.message);
+    console.log(error);
+  }
+};
+
+export const addToCart = async (cartObj, user) => {
+  if (!user.uid) {
+    return [];
+  }
+
+  const cartRef = doc(firestore, `carts/${user.uid}`);
+  const snapShot = await getDoc(cartRef);
+
+  if (!snapShot.exists()) {
+    try {
+      await setDoc(cartRef, {
+        cart: [cartObj],
+      });
+      const updatedSnapshot = await getDoc(cartRef);
+      return updatedSnapshot.data().cart;
+    } catch (error) {
+      console.log("Error creating cartProduct:", error.message);
+      return [];
+    }
+  } else {
+    const currentCart = snapShot.data().cart;
+
+    if (cartObj.selectedVariation) {
+      const productIndex = currentCart.findIndex(
+        (cart) => cart.productId === cartObj.productId
+      );
+
+      if (productIndex !== -1) {
+        const variationIndex = currentCart.findIndex(
+          (cart) =>
+            cart.selectedVariation &&
+            cart.selectedVariation.id === cartObj.selectedVariation.id
+        );
+
+        if (variationIndex !== -1) {
+          await updateDoc(cartRef, {
+            cart: currentCart.map((cart) => {
+              if (cart.selectedVariation.id === cartObj.selectedVariation.id) {
+                return {
+                  ...cart,
+                  quantity:
+                    parseInt(cart.quantity) + parseInt(cartObj.quantity),
+                };
+              } else {
+                return cart;
+              }
+            }),
+          });
+        } else {
+          await updateDoc(cartRef, {
+            cart: [...currentCart, cartObj],
+          });
+        }
+      } else {
+        await updateDoc(cartRef, {
+          cart: [...currentCart, cartObj],
+        });
+      }
+    } else {
+      const productIndex = currentCart.findIndex(
+        (cart) => cart.productId === cartObj.productId
+      );
+
+      if (productIndex !== -1) {
+        await updateDoc(cartRef, {
+          cart: currentCart.map((cart) => {
+            if (cart.productId === cartObj.productId) {
+              return {
+                ...cart,
+                quantity: parseInt(cart.quantity) + parseInt(cartObj.quantity),
+              };
+            } else {
+              return cart;
+            }
+          }),
+        });
+      } else {
+        await updateDoc(cartRef, {
+          cart: [...currentCart, cartObj],
+        });
+      }
+    }
+
+    const updatedSnapshot = await getDoc(cartRef);
+    return updatedSnapshot.data().cart;
+  }
+};
+
+export const addToCart2 = (cartObj) => {
+  // Retrieve the cart data from localStorage
+  const currentCart = JSON.parse(localStorage.getItem("cart")) || [];
+
+  if (cartObj.selectedVariation) {
+    const productIndex = currentCart.findIndex(
+      (cart) => cart.productId === cartObj.productId
+    );
+
+    if (productIndex !== -1) {
+      const variationIndex = currentCart.findIndex(
+        (cart) =>
+          cart.selectedVariation &&
+          cart.selectedVariation.id === cartObj.selectedVariation.id
+      );
+
+      if (variationIndex !== -1) {
+        // Update the quantity for the existing variation
+        const updatedCart = currentCart.map((cart) => {
+          if (cart.selectedVariation.id === cartObj.selectedVariation.id) {
+            return {
+              ...cart,
+              quantity: parseInt(cart.quantity) + parseInt(cartObj.quantity),
+            };
+          } else {
+            return cart;
+          }
+        });
+        localStorage.setItem("cart", JSON.stringify(updatedCart));
+        return updatedCart;
+      } else {
+        // Add a new variation of the product
+        const updatedCart = [...currentCart, cartObj];
+        localStorage.setItem("cart", JSON.stringify(updatedCart));
+        return updatedCart;
+      }
+    } else {
+      // Add a new product with a variation
+      const updatedCart = [...currentCart, cartObj];
+      localStorage.setItem("cart", JSON.stringify(updatedCart));
+      return updatedCart;
+    }
+  } else {
+    const productIndex = currentCart.findIndex(
+      (cart) => cart.productId === cartObj.productId
+    );
+
+    if (productIndex !== -1) {
+      // Update the quantity for the existing product
+      const updatedCart = currentCart.map((cart) => {
+        if (cart.productId === cartObj.productId) {
+          return {
+            ...cart,
+            quantity: parseInt(cart.quantity) + parseInt(cartObj.quantity),
+          };
+        } else {
+          return cart;
+        }
+      });
+      localStorage.setItem("cart", JSON.stringify(updatedCart));
+      return updatedCart;
+    } else {
+      // Add a new product
+      const updatedCart = [...currentCart, cartObj];
+      localStorage.setItem("cart", JSON.stringify(updatedCart));
+      return updatedCart;
+    }
+  }
 };
 
 export const getAllLatestProducts = async (startAfter) => {

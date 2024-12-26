@@ -5,7 +5,9 @@ import Link from "next/link";
 import { useContextElement } from "@/context/Context";
 import CountdownComponent from "../common/Countdown";
 import "./productCard.css";
+import { useRouter } from "next/navigation";
 export const ProductCard = ({ product, gridItems }) => {
+  const router = useRouter();
   const divRef = useRef(null);
   const [width, setWidth] = useState(0);
   const [currentImage, setCurrentImage] = useState(product.imgSrc);
@@ -172,10 +174,12 @@ export const ProductCard = ({ product, gridItems }) => {
             border: "1px solid gainsboro",
           }}
           key={product.id}
+          onClick={() => {
+            router.push(`/product-swatch-image-rounded/${product.id}`);
+          }}
         >
           <div className="card-product-wrapper">
             <a
-              href={product.id}
               className="product-img"
               ref={divRef}
               style={{ maxHeight: width, minHeight: width }}

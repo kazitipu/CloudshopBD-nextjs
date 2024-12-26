@@ -1,8 +1,11 @@
 "use client";
-
-import { useContextElement } from "@/context/Context";
-
-export default function WishlistLength() {
-  const { wishList } = useContextElement();
-  return <>{wishList.length}</>;
-}
+import { connect } from "react-redux";
+const WishlistLength = ({ wishlist }) => {
+  return <>{wishlist.length}</>;
+};
+const mapStateToProps = (state) => {
+  return {
+    wishlist: state.wishlist.wishlist,
+  };
+};
+export default connect(mapStateToProps, {})(WishlistLength);

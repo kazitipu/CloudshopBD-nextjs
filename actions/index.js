@@ -58,6 +58,13 @@ import {
   getAllHomeScreenBestSelling,
   getAllBestSelling,
   getSingleCategoryProducts,
+  updateSingleProduct,
+  addToCart,
+  addToCart2,
+  addToWishlist,
+  addToWishlist2,
+  removeFromWishlist,
+  removeFromWishlist2,
 } from "../firebase/firebase.utils";
 
 export const setAllOrders = (ordersArray) => ({
@@ -78,6 +85,21 @@ export const setAllAdmins = (adminsArray) => ({
   type: "SET_ALL_ADMINS",
   payload: adminsArray,
 });
+
+export const setCouponRedux = (coupon) => async (dispatch) => {
+  dispatch({
+    type: "SET_COUPON_REDUX",
+    payload: coupon,
+  });
+};
+
+export const setTotalRedux = (total) => async (dispatch) => {
+  dispatch({
+    type: "SET_TOTAL_REDUX",
+    payload: total,
+  });
+};
+
 export const setCurrentAdmin = (adminObj) => ({
   type: "SET_CURRENT_ADMIN",
   payload: adminObj,
@@ -190,6 +212,63 @@ export const updatePaymentRequestOrderStatusRedux =
     });
   };
 
+export const removeFromCartRedux = (item, currentUser) => async (dispatch) => {
+  let cartData = [];
+  if (currentUser && currentUser.uid) {
+    cartData = await removeFromCart(item, currentUser);
+  } else {
+    // guest er khetre khali item ta pathay dibo niche local storage theke delete kore
+    const currentCart = JSON.parse(localStorage.getItem("cart")) || [];
+
+    if (item.selectedVariation) {
+      // Remove the item with the matching productId and selectedVariation
+      const updatedCart = currentCart.filter(
+        (cart) =>
+          !(
+            cart.productId === item.productId &&
+            cart.selectedVariation?.id === item.selectedVariation.id
+          )
+      );
+
+      // Update localStorage
+      localStorage.setItem("cart", JSON.stringify(updatedCart));
+      cartData = updatedCart;
+    } else {
+      // Remove the item with the matching productId
+      const updatedCart = currentCart.filter(
+        (cart) => cart.productId !== item.productId
+      );
+
+      // Update localStorage
+      localStorage.setItem("cart", JSON.stringify(updatedCart));
+      cartData = updatedCart;
+    }
+  }
+  dispatch({
+    type: "REMOVE_FROM_CART",
+    payload: cartData,
+  });
+};
+
+export const incrementQuantityRedux = (item) => async (dispatch) => {
+  dispatch({
+    type: "INCREMENT_QUANTITY",
+    payload: item,
+  });
+};
+export const decrementQuantityRedux = (item) => async (dispatch) => {
+  dispatch({
+    type: "DECREMENT_QUANTITY",
+    payload: item,
+  });
+};
+export const setQuantityRedux = (item, quantity) => async (dispatch) => {
+  dispatch({
+    type: "SET_QUANTITY",
+    payload: { item, quantity },
+  });
+};
+
 export const makePaymentRedux =
   (total, invoicesToPay, currentUser, admin, parcelsArray, paymentMethod) =>
   async (dispatch) => {
@@ -210,6 +289,69 @@ export const makePaymentRedux =
 export const getCurrencyRedux = () => async (dispatch) => {
   const currency = await getCurrency();
   dispatch({ type: "GET_CURRENCY_REDUX", payload: currency });
+};
+
+export const addToCartRedux = (cartObj, currentUser) => async (dispatch) => {
+  const cartData = await addToCart(cartObj, currentUser);
+  dispatch({
+    type: "ADD_TO_CART",
+    payload: cartData,
+  });
+};
+
+export const addToWishlistRedux =
+  (wishlistObj, currentUser) => async (dispatch) => {
+    let wishlist = [];
+    if (currentUser && currentUser.uid) {
+      wishlist = await addToWishlist(wishlistObj, currentUser);
+    } else {
+      // guest wishlist
+      wishlist = await addToWishlist2(wishlistObj);
+    }
+
+    dispatch({
+      type: "ADD_TO_WISHLIST",
+      payload: wishlist,
+    });
+  };
+
+export const removeFromWishlistRedux =
+  (item, currentUser) => async (dispatch) => {
+    let wishlist = [];
+    if (currentUser && currentUser.uid) {
+      wishlist = await removeFromWishlist(item, currentUser);
+    } else {
+      wishlist = await removeFromWishlist2(item);
+    }
+
+    dispatch({
+      type: "REMOVE_FROM_WISHLIST",
+      payload: wishlist,
+    });
+  };
+
+export const setReduxWishlist = (wishlist) => async (dispatch) => {
+  dispatch({
+    type: "SET_REDUX_WISHLIST",
+    payload: wishlist,
+  });
+};
+
+// for guest cart
+export const addToCartRedux2 = (cartObj) => async (dispatch) => {
+  // for loacl storage saving and data retreving
+  const cartData = addToCart2(cartObj);
+  dispatch({
+    type: "ADD_TO_CART",
+    payload: cartData,
+  });
+};
+export const setCartRedux = (cartData) => async (dispatch) => {
+  // for loacl storage saving and data retreving
+  dispatch({
+    type: "SET_CART",
+    payload: cartData,
+  });
 };
 
 export const getAllOrdersRedux = (orderStatus) => async (dispatch) => {
@@ -550,3 +692,11 @@ export const getSingleCategoryProductsRedux =
       payload: allProducts,
     });
   };
+
+export const updateSingleProductRedux = (productObj) => async (dispatch) => {
+  const product = await updateSingleProduct(productObj);
+  dispatch({
+    type: "GET_SINGLE_PRODUCT",
+    payload: product,
+  });
+};

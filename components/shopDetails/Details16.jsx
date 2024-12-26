@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { openCartModal } from "@/utlis/openCartModal";
 import {
@@ -14,19 +14,137 @@ import CountdownComponent from "@/components/common/Countdown";
 import Slider1ZoomOuter from "./sliders/Slider1ZoomOuter";
 import { useContextElement } from "@/context/Context";
 import { connect } from "react-redux";
-const Details16 = ({ product, freeShipping }) => {
+import toast from "react-hot-toast";
+import {
+  addToCartRedux,
+  addToCartRedux2,
+  addToWishlistRedux,
+  removeFromWishlistRedux,
+} from "@/actions";
+
+const Details16 = ({
+  product,
+  freeShipping,
+  currentUser,
+  addToCartRedux,
+  addToCartRedux2,
+  addToWishlistRedux,
+  removeFromWishlistRedux,
+  wishlist,
+}) => {
   const router = useRouter();
-  const [currentColor, setCurrentColor] = useState(colorOptions2[0]);
-  const [currentSize, setCurrentSize] = useState(sizeOptions[0]);
   const [quantity, setQuantity] = useState(1);
-  const handleColor = (color) => {
-    const updatedColor = colorOptions2.filter(
-      (elm) => elm.value.toLowerCase() == color.toLowerCase()
-    )[0];
-    if (updatedColor) {
-      setCurrentColor(updatedColor);
+  const [loader, setLoader] = useState(false);
+
+  const [state, setState] = useState({
+    productCount: 1,
+    fetchCart: false,
+    selectedColor: 1,
+    variation: null,
+    quantity: 1,
+    visible: false,
+    imageUrl: "",
+    imageLoading: false,
+    productFetched: false,
+    getPicture: false,
+    render: false,
+  });
+
+  useEffect(() => {
+    let obj = {};
+
+    if (
+      product &&
+      product.id &&
+      product.savedAttributes &&
+      product.savedAttributes.length > 0
+    ) {
+      console.log(product);
+      product.savedAttributes.map((attribute, index) => {
+        if (attribute.selectedTerms.length > 0) {
+          console.log(attribute.selectedTerms);
+          obj["selectedTerm" + index] = attribute.selectedTerms[0];
+        }
+      });
+    }
+    console.log(obj);
+    let variation = getVariation(obj);
+    setState({
+      ...state,
+      ...obj,
+      variation,
+      loading: false,
+      productFetched: true,
+    });
+  }, [product.id]);
+
+  useEffect(() => {
+    let obj = {};
+    console.log("this function is also getting called!");
+    if (
+      state.render &&
+      product &&
+      product.id &&
+      product.savedAttributes &&
+      product.savedAttributes.length > 0
+    ) {
+      console.log(product);
+      for (var key of Object.keys(state)) {
+        if (key.includes("selectedTerm")) {
+          obj[key] = state[key];
+        }
+      }
+      let variation = getVariation(obj);
+      console.log(variation);
+      setState({
+        ...state,
+        ...obj,
+        variation,
+        render: false,
+      });
+    }
+  }, [state.render]);
+
+  const getPrice2 = (product) => {
+    if (state.variation && state.variation.id) {
+      if (state.variation.salePrice == 0) {
+        return state.variation.price;
+      } else {
+        return state.variation.salePrice;
+      }
+    } else {
+      if (product && product.id) {
+        if (product.salePrice == 0) {
+          return product.price;
+        } else {
+          return product.salePrice;
+        }
+      } else {
+        return 0;
+      }
     }
   };
+
+  const getPrice3 = (product) => {
+    if (product.selectedVariation.id) {
+      if (product.selectedVariation.salePrice == 0) {
+        return product.selectedVariation.price;
+      } else {
+        return product.selectedVariation.salePrice;
+      }
+    } else {
+      if (product.product) {
+        if (product.product.salePrice == 0) {
+          return product.product.price;
+        } else {
+          return product.product.salePrice;
+        }
+      } else {
+        return 0;
+      }
+    }
+  };
+
   const getStar = (product) => {
     if (product.reviews && product.reviews.length > 0) {
       let averageStar = 0;
@@ -40,7 +158,6 @@ const Details16 = ({ product, freeShipping }) => {
   };
 
   const getVariation = (obj) => {
-    const { product } = props;
     let selectedVariation = {};
     if (product && product.id && product.displayedVariations.length > 0) {
       product.displayedVariations.map((vari) => {
@@ -61,8 +178,8 @@ const Details16 = ({ product, freeShipping }) => {
   };
 
   const getPrice = (product) => {
-    if (product.displayedVariations.length > 0) {
-      if (product.displayedVariations[0].salePrice == 0) {
+    if (state.variation && state.variation.id) {
+      if (state.variation.salePrice == 0) {
         return (
           <div>
             <div style={{ textAlign: "left", color: "white", fontSize: 11 }}>
@@ -71,7 +188,7 @@ const Details16 = ({ product, freeShipping }) => {
             <div
               style={{ textAlign: "left", fontWeight: "bold", marginTop: -5 }}
             >
-              ৳{product.displayedVariations[0].price}
+              ৳{state.variation.price}
             </div>
           </div>
         );
@@ -81,7 +198,7 @@ const Details16 = ({ product, freeShipping }) => {
             <div
               style={{ textAlign: "left", fontWeight: "bold", fontSize: 23 }}
             >
-              ৳{product.displayedVariations[0].salePrice}
+              ৳{state.variation.salePrice}
             </div>
             <div
               style={{
@@ -90,7 +207,7 @@ const Details16 = ({ product, freeShipping }) => {
                 fontSize: 15,
               }}
             >
-              <del>৳{product.displayedVariations[0].price}</del>
+              <del>৳{state.variation.price}</del>
             </div>
 
             <div
@@ -111,9 +228,7 @@ const Details16 = ({ product, freeShipping }) => {
               >
                 {parseInt(
                   100 -
-                    (product.displayedVariations[0].salePrice /
-                      product.displayedVariations[0].price) *
-                      100
+                    (state.variation.salePrice / state.variation.price) * 100
                 )}
                 %
               </div>
@@ -209,6 +324,7 @@ const Details16 = ({ product, freeShipping }) => {
     const minutes = Math.floor((total / 1000 / 60) % 60);
     const hours = Math.floor((total / (1000 * 60 * 60)) % 24);
     const days = Math.floor(total / (1000 * 60 * 60 * 24));
+    console.log(state);
     return (
       <div
         style={{
@@ -218,7 +334,7 @@ const Details16 = ({ product, freeShipping }) => {
         }}
       >
         <i
-          class="icofont-delivery-time"
+          className="icofont-delivery-time"
           style={{ fontWeight: "bold", marginRight: 7, fontSize: 18 }}
         ></i>
         Order in The Next{" "}
@@ -267,10 +383,9 @@ const Details16 = ({ product, freeShipping }) => {
               <div className="tf-product-media-wrap sticky-top">
                 <div className="thumbs-slider">
                   <Slider1ZoomOuter
-                    handleColor={handleColor}
-                    currentColor={currentColor.value}
-                    firstImage={product.pictures[0]}
                     product={product}
+                    getPicture={state.getPicture}
+                    variation={state.variation}
                   />
                 </div>
               </div>
@@ -398,7 +513,7 @@ const Details16 = ({ product, freeShipping }) => {
                   <div>
                     <div>
                       <i
-                        class="icofont-gift"
+                        className="icofont-gift"
                         style={{
                           fontWeight: "bold",
                           marginRight: 7,
@@ -427,83 +542,54 @@ const Details16 = ({ product, freeShipping }) => {
                       </span>
                     </div>
                   </div>
-                  <div className="tf-product-info-variant-picker">
-                    <div className="variant-picker-item">
-                      <div className="variant-picker-label">
-                        Color:{" "}
-                        <span className="fw-6 variant-picker-label-value">
-                          {currentColor.value}
-                        </span>
-                      </div>
-                      <form className="variant-picker-values">
-                        {colorOptions2.map((color) => (
-                          <React.Fragment key={color.id}>
-                            <input
-                              id={color.id}
-                              type="radio"
-                              name="color1"
-                              readOnly
-                              checked={currentColor == color}
-                            />
-                            <label
-                              onClick={() => setCurrentColor(color)}
-                              className="hover-tooltip image-rounded radius-60"
-                              htmlFor={color.id}
-                              data-value={color.value}
-                            >
-                              <span className="btn-checkbox">
-                                <Image
-                                  alt={color.value}
-                                  src={color.imgSrc}
-                                  width={color.width}
-                                  height={color.height}
-                                />
+                  {product.savedAttributes.length > 0 && (
+                    <div className="tf-product-info-variant-picker">
+                      {product.savedAttributes.map((attribute, index) => (
+                        <div className="variant-picker-item">
+                          <div className="d-flex justify-content-between align-items-center">
+                            <div className="variant-picker-label">
+                              Choose {attribute.name}:{" "}
+                              <span className="fw-6 variant-picker-label-value">
+                                {state["selectedTerm" + index] &&
+                                  state["selectedTerm" + index].name}
                               </span>
-                              <span className="tooltip">{color.value}</span>
-                            </label>
-                          </React.Fragment>
-                        ))}
-                      </form>
-                    </div>
-                    <div className="variant-picker-item">
-                      <div className="d-flex justify-content-between align-items-center">
-                        <div className="variant-picker-label">
-                          Size:{" "}
-                          <span className="fw-6 variant-picker-label-value">
-                            {currentSize.value}
-                          </span>
+                            </div>
+                          </div>
+                          <form className="variant-picker-values">
+                            {attribute.selectedTerms.map((term, i) => (
+                              <React.Fragment key={i}>
+                                <input
+                                  type="radio"
+                                  name="size1"
+                                  id={term.id}
+                                  readOnly
+                                  checked={
+                                    state["selectedTerm" + index] &&
+                                    state["selectedTerm" + index].id == term.id
+                                  }
+                                />
+                                <label
+                                  onClick={() =>
+                                    setState({
+                                      ...state,
+                                      ["selectedTerm" + index]: term,
+                                      render: true,
+                                      getPicture: true,
+                                    })
+                                  }
+                                  className="style-text"
+                                  htmlFor={term.id}
+                                  data-value={term.name}
+                                >
+                                  <p>{term.name}</p>
+                                </label>
+                              </React.Fragment>
+                            ))}
+                          </form>
                         </div>
-                        <a
-                          href="#find_size"
-                          data-bs-toggle="modal"
-                          className="find-size fw-6"
-                        >
-                          Find your size
-                        </a>
-                      </div>
-                      <form className="variant-picker-values">
-                        {sizeOptions.map((size) => (
-                          <React.Fragment key={size.id}>
-                            <input
-                              type="radio"
-                              name="size1"
-                              id={size.id}
-                              readOnly
-                              checked={currentSize == size}
-                            />
-                            <label
-                              onClick={() => setCurrentSize(size)}
-                              className="style-text"
-                              htmlFor={size.id}
-                              data-value={size.value}
-                            >
-                              <p>{size.value}</p>
-                            </label>
-                          </React.Fragment>
-                        ))}
-                      </form>
+                      ))}
                     </div>
-                  </div>
+                  )}
                   <div className="tf-product-info-quantity">
                     <div className="quantity-title fw-6">Quantity</div>
                     <Quantity setQuantity={setQuantity} />
@@ -511,91 +597,84 @@ const Details16 = ({ product, freeShipping }) => {
                   <div className="tf-product-info-buy-button">
                     <form onSubmit={(e) => e.preventDefault()} className="">
                       <a
-                        onClick={() => {
+                        onClick={async () => {
+                          setLoader(true);
                           openCartModal();
-                          addProductToCart(product.id, quantity ? quantity : 1);
+                          let cartObj = {
+                            quantity: quantity,
+                            productId: product.id,
+                            product: product,
+                            selectedVariation: state.variation
+                              ? state.variation
+                              : null,
+                          };
+                          setState({
+                            ...state,
+                          });
+
+                          if (currentUser && currentUser.uid) {
+                            await addToCartRedux(cartObj, currentUser);
+                          } else {
+                            // for guest add to local storage of the browser
+                            await addToCartRedux2(cartObj);
+                          }
+                          toast("item added to cart.");
+                          setState({
+                            ...state,
+                          });
+                          setLoader(false);
                         }}
                         className="tf-btn btn-fill justify-content-center fw-6 fs-16 flex-grow-1 animate-hover-btn "
                       >
-                        <span>
-                          {isAddedToCartProducts(product.id)
-                            ? "Already Added"
-                            : "Add to cart"}{" "}
-                          -{" "}
-                        </span>
+                        <span>Add to cart - </span>
                         <span className="tf-qty-price">
-                          ${(product.price * quantity).toFixed(2)}
+                          Tk {getPrice2(product) * quantity}
                         </span>
                       </a>
                       <a
-                        onClick={() => addToWishlist(product.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (
+                            wishlist &&
+                            wishlist.length > 0 &&
+                            wishlist.find((wish) => wish.id == product.id)
+                          ) {
+                            removeFromWishlistRedux(product, currentUser);
+                            toast("Item removed from wishlist");
+                          } else {
+                            addToWishlistRedux(product, currentUser);
+                            toast("Item added to Wishlist");
+                          }
+                        }}
                         className="tf-product-btn-wishlist hover-tooltip box-icon bg_white wishlist btn-icon-action"
                       >
                         <span
-                          className={`icon icon-heart ${
-                            isAddedtoWishlist(product.id) ? "added" : ""
-                          }`}
+                          className={`icon icon-heart`}
+                          style={{
+                            color:
+                              wishlist &&
+                              wishlist.length > 0 &&
+                              wishlist.find((wish) => wish.id == product.id)
+                                ? "red"
+                                : "",
+                          }}
                         />
                         <span className="tooltip">
-                          {" "}
-                          {isAddedtoWishlist(product.id)
-                            ? "Already Wishlisted"
+                          {wishlist &&
+                          wishlist.length > 0 &&
+                          wishlist.find((wish) => wish.id == product.id)
+                            ? "Added to Wishlist"
                             : "Add to Wishlist"}
                         </span>
                         <span className="icon icon-delete" />
                       </a>
-                      <a
-                        href="#compare"
-                        data-bs-toggle="offcanvas"
-                        aria-controls="offcanvasLeft"
-                        onClick={() => addToCompareItem(product.id)}
-                        className="tf-product-btn-wishlist hover-tooltip box-icon bg_white compare btn-icon-action"
-                      >
-                        <span
-                          className={`icon icon-compare ${
-                            isAddedtoCompareItem(product.id) ? "added" : ""
-                          }`}
-                        />
-                        <span className="tooltip">
-                          {" "}
-                          {isAddedtoCompareItem(product.id)
-                            ? "Already Compared"
-                            : "Add to Compare"}
-                        </span>
-                        <span className="icon icon-check" />
-                      </a>
+
                       <div className="w-100">
-                        <a href="#" className="btns-full">
-                          Buy with{" "}
-                          <Image
-                            alt="image"
-                            src="/images/payments/paypal.png"
-                            width={64}
-                            height={18}
-                          />
-                        </a>
-                        <a href="#" className="payment-more-option">
-                          More payment options
-                        </a>
+                        <div className="btns-full">Buy Now</div>
                       </div>
                     </form>
                   </div>
                   <div className="tf-product-info-extra-link">
-                    <a
-                      href="#compare_color"
-                      data-bs-toggle="modal"
-                      className="tf-product-extra-icon"
-                    >
-                      <div className="icon">
-                        <Image
-                          alt="image"
-                          src="/images/item/compare.svg"
-                          width={20}
-                          height={20}
-                        />
-                      </div>
-                      <div className="text fw-6">Compare color</div>
-                    </a>
                     <a
                       href="#ask_question"
                       data-bs-toggle="modal"
@@ -641,14 +720,16 @@ const Details16 = ({ product, freeShipping }) => {
                       <div className="col-xl-6 col-12">
                         <div className="tf-product-delivery">
                           <div className="icon">
-                            <i className="icon-delivery-time" />
+                            <i
+                              className="icofont-fast-delivery"
+                              style={{ fontSize: 45 }}
+                            ></i>
                           </div>
                           <p>
                             Estimate delivery times:{" "}
-                            <span className="fw-7">12-26 days</span>{" "}
-                            (International),{" "}
-                            <span className="fw-7">3-6 days</span> (United
-                            States).
+                            <span className="fw-7">3 days</span> <br />
+                            Please call us If It's taking more than{" "}
+                            <span style={{ fontWeight: "bold" }}>3 days</span>
                           </p>
                         </div>
                       </div>
@@ -658,30 +739,12 @@ const Details16 = ({ product, freeShipping }) => {
                             <i className="icon-return-order" />
                           </div>
                           <p>
-                            Return within <span className="fw-7">30 days</span>{" "}
-                            of purchase. Duties &amp; taxes are non-refundable.
+                            Return within <span className="fw-7">3 days</span>{" "}
+                            of purchase. Delivery and packing charge is
+                            non-refundable.
                           </p>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                  <div className="tf-product-info-trust-seal">
-                    <div className="tf-product-trust-mess">
-                      <i className="icon-safe" />
-                      <p className="fw-6">
-                        Guarantee Safe <br /> Checkout
-                      </p>
-                    </div>
-                    <div className="tf-payment">
-                      {paymentImages.map((image, index) => (
-                        <Image
-                          key={index}
-                          alt={image.alt}
-                          src={image.src}
-                          width={image.width}
-                          height={image.height}
-                        />
-                      ))}
                     </div>
                   </div>
                 </div>
@@ -690,7 +753,7 @@ const Details16 = ({ product, freeShipping }) => {
           </div>
         </div>
       </div>
-      <StickyItem />
+      {/* <StickyItem product={product} addToCartRedux={addToCartRedux} addToCartRedux2={addToCartRedux2} total={getPrice2(product) * quantity} /> */}
     </section>
   );
 };
@@ -698,6 +761,13 @@ const Details16 = ({ product, freeShipping }) => {
 const mapStateToProps = (state) => {
   return {
     freeShipping: state.cart.freeShipping,
+    currentUser: state.users.currentUser,
+    wishlist: state.wishlist.wishlist,
   };
 };
-export default connect(mapStateToProps, {})(Details16);
+export default connect(mapStateToProps, {
+  addToCartRedux,
+  addToCartRedux2,
+  addToWishlistRedux,
+  removeFromWishlistRedux,
+})(Details16);

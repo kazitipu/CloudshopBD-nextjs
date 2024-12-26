@@ -1,0 +1,25 @@
+.two-line-span {
+  display: -webkit-box; /* Enables the webkit box layout for truncation */
+  -webkit-box-orient: vertical; /* Specifies vertical layout of box items */
+  -webkit-line-clamp: 2; /* Limit to 2 lines */
+  overflow: hidden; /* Hides overflowing content */
+  text-overflow: ellipsis; /* Adds ellipsis (...) to the truncated text */
+  white-space: normal; /* Ensures text wraps to the next line */
+}
+
+@media only screen and (max-width: 600px) {
+  .thumbs-slider1 .tf-product-media-thumbs .swiper-slide,
+  .thumbs-slider2 .tf-product-media-thumbs .swiper-slide,
+  .thumbs-slider3 .tf-product-media-thumbs .swiper-slide,
+  .thumbs-slider4 .tf-product-media-thumbs .swiper-slide,
+  .thumbs-slider .tf-product-media-thumbs .swiper-slide {
+    min-width: 70px;
+    max-width: 70px;
+    min-height: 85px;
+    max-height: 85px;
+  }
+
+  .overflow-for-mobile {
+    overflow-x: scroll;
+  }
+}
