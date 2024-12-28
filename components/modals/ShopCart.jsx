@@ -58,23 +58,8 @@ const ShopCart = ({
     }
   }, []);
 
-  const setQuantity = (id, quantity) => {
-    if (quantity >= 1) {
-      const item = cartProducts.filter((elm) => elm.id == id)[0];
-      const items = [...cartProducts];
-      const itemIndex = items.indexOf(item);
-      item.quantity = quantity;
-      items[itemIndex] = item;
-      setCartProducts(items);
-    }
-  };
-  const removeItem = (id) => {
-    setCartProducts((pre) => [...pre.filter((elm) => elm.id != id)]);
-  };
-
   const addNoteRef = useRef();
   const addGiftRef = useRef();
-  const addShipingRef = useRef();
 
   const calculateCart = () => {
     let cartProducts = cartData;
