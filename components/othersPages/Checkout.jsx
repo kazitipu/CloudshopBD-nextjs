@@ -5,7 +5,12 @@ import Link from "next/link";
 import { connect } from "react-redux";
 import React, { useState, useEffect } from "react";
 import { matchCoupon } from "@/firebase/firebase.utils";
-import { setCouponRedux, setTotalRedux } from "@/actions";
+import {
+  setCouponRedux,
+  setTotalRedux,
+  updateSingleProductRedux,
+  addToOrderRedux,
+} from "@/actions";
 import toast from "react-hot-toast";
 import { ClipLoader } from "react-spinners";
 const Checkout = ({
@@ -15,6 +20,8 @@ const Checkout = ({
   freeShipping,
   setTotalRedux,
   guest,
+  addToOrderRedux,
+  updateSingleProductRedux,
 }) => {
   const [number, onChangeNumber] = React.useState("");
   const [loader, setLoader] = useState(false);
@@ -682,18 +689,21 @@ const Checkout = ({
                     setLoader(true);
                     let orderObj = {
                       id:
-                        new Date().getTime().toString() +
-                        currentUser.id.slice(0, 3),
+                        new Date().getTime().toString() + currentUser &&
+                        currentUser.uid
+                          ? currentUser.uid.slice(0, 3)
+                          : guest.id.slice(0, 3),
                       currentUser: currentUser,
-                      orders: props.cartData,
-                      subTotal: sateactualOrder,
+                      guest: guest && guest.id ? guest : false,
+                      orders: cartData,
+                      subTotal: state.actualOrder,
                       deliveryCharge:
-                        sumAmount >= props.freeShipping
+                        state.sumAmount >= freeShipping
                           ? 0
                           : dhakaDelivery
                           ? 70
                           : 120,
-                      discountApplied: actualOrder - sumAmount,
+                      discountApplied: state.actualOrder - state.sumAmount,
                       couponApplied: coupon
                         ? {
                             name: coupon.name,
@@ -701,14 +711,18 @@ const Checkout = ({
                               coupon.discountType == "cash"
                                 ? coupon.discountAmount
                                 : parseInt(
-                                    sumAmount * (coupon.discountAmount / 100)
+                                    state.sumAmount *
+                                      (coupon.discountAmount / 100)
                                   ),
                           }
                         : null,
                       orderStatus: "Processing",
                       date: new Date().getTime().toString(),
                       orderStatusScore: 1,
-                      userId: currentUser.uid,
+                      userId:
+                        currentUser && currentUser.uid
+                          ? currentUser.uid
+                          : guest.id,
                     };
                     await addToOrderRedux(orderObj);
                     for (let i = 0; i < orderObj.orders.length; i++) {
@@ -748,6 +762,9 @@ const mapStateToProps = (state) => {
     guest: state.users.guest,
   };
 };
-export default connect(mapStateToProps, { setCouponRedux, setTotalRedux })(
-  Checkout
-);
+export default connect(mapStateToProps, {
+  setCouponRedux,
+  setTotalRedux,
+  addToOrderRedux,
+  updateSingleProductRedux,
+})(Checkout);

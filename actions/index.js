@@ -65,6 +65,7 @@ import {
   addToWishlist2,
   removeFromWishlist,
   removeFromWishlist2,
+  addToOrder,
 } from "../firebase/firebase.utils";
 
 export const setAllOrders = (ordersArray) => ({
@@ -698,5 +699,12 @@ export const updateSingleProductRedux = (productObj) => async (dispatch) => {
   dispatch({
     type: "GET_SINGLE_PRODUCT",
     payload: product,
+  });
+};
+export const addToOrderRedux = (orderObj) => async (dispatch) => {
+  const order = await addToOrder(orderObj);
+  dispatch({
+    type: "ADD_TO_ORDER",
+    payload: order,
   });
 };

@@ -1805,6 +1805,41 @@ export const addToCart2 = (cartObj) => {
   }
 };
 
+export const addToOrder = async (orderObj) => {
+  if (orderObj.guest) {
+    // empty the cart from local storage for guest
+    const cart = JSON.parse(localStorage.getItem("cart"));
+
+    // If the cart exists, clear it
+    if (cart) {
+      localStorage.setItem(`cart`, JSON.stringify([]));
+    }
+  } else {
+    // empty the cart from user
+    const cartRef = doc(firestore, `carts/${orderObj.currentUser.id}`);
+    const cartSnap = await getDoc(cartRef);
+
+    // First, empty the cart
+    if (cartSnap.exists()) {
+      await updateDoc(cartRef, {
+        cart: [],
+      });
+    }
+  }
+
+  const orderRef = doc(firestore, `orders/${orderObj.id}`);
+  const orderSnap = await getDoc(orderRef);
+
+  // If order already exists, return null
+  if (orderSnap.exists()) {
+    return null;
+  } else {
+    await setDoc(orderRef, orderObj);
+    const updatedSnapshot = await getDoc(orderRef);
+    return updatedSnapshot.data();
+  }
+};
+
 export const getAllLatestProducts = async (startAfter) => {
   try {
     const productsCollectionRef = collection(firestore, "products");

@@ -11,7 +11,7 @@ const setUsersReducer = (state = INITIAL_STATE, action) => {
       return { ...state, users: [...action.payload] };
     case "GET_CURRENCY_REDUX":
       return { ...state, currency: action.payload };
-    case "GET_CURRENT_USER":
+    case "SET_CURRENT_USER":
       return { ...state, currentUser: action.payload };
     case "SET_GUEST":
       return { ...state, guest: action.payload };

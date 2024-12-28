@@ -137,7 +137,7 @@ export default function Header2({
               </li>
               <li className="nav-account">
                 <a
-                  href="#login"
+                  href="#userProfile"
                   data-bs-toggle="modal"
                   className="nav-icon-item"
                 >
