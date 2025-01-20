@@ -59,7 +59,7 @@ const Orders = ({ getAllOrdersRedux, currentUser, guest, orders }) => {
                       {order.orderStatus}
                     </div>
                   </td>
-                  <td>
+                  <td style={{ fontWeight: "bold" }}>
                     {" "}
                     ৳{" "}
                     {order.subTotal +

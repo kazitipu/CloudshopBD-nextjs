@@ -3,74 +3,122 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { connect } from "react-redux";
 import { getSingleOrder } from "@/firebase/firebase.utils";
-const OrderDetails = ({ orderId, orders }) => {
-  const [order, setOrder] = useState(null);
+import {
+  setTotalRedux,
+  updateOrderRedux,
+  addToOrderRedux,
+  getSingleOrderRedux,
+} from "@/actions";
+import { ClipLoader } from "react-spinners";
+import toast from "react-hot-toast";
+const OrderDetails = ({
+  orderId,
+  orders,
+  updateOrderRedux,
+  addToOrderRedux,
+  getSingleOrderRedux,
+}) => {
+  const [seletedTab, setSelectedTab] = useState("Order Tracking");
+  const [loader, setLoader] = useState(false);
+  const [state, setState] = useState({
+    loading: true,
+    cartArr: [],
+    cartProducts: [],
+    sumAmount: 0,
+    actualOrder: 0,
+    isApplied: false,
+    validCode: false,
+    couponCode: null,
+    dhakaDelivery: true,
+  });
   useEffect(() => {
     const getOrder = async () => {
-      let order = null;
-      if (orders && orders.length > 0) {
-        order = orders.find((order) => order.id === orderId);
-      } else {
-        order = await getSingleOrder(orderId);
+      if (orders && orders.length == 0) {
+        await getSingleOrderRedux(orderId);
       }
-      setOrder(order);
     };
     getOrder();
-  }, []);
+  }, [orders]);
 
-  useEffect(() => {
-    const tabs = () => {
-      console.log("tab is getting called!");
-      document.querySelectorAll(".widget-tabs").forEach((widgetTab) => {
-        const titles = widgetTab.querySelectorAll(
-          ".widget-menu-tab .item-title"
-        );
+  const singleProductTotal = (product) => {
+    let total = parseInt(getPrice4(product)) * product.quantity;
+    return total;
+  };
+  const singleProductTotal2 = (product) => {
+    let total = parseInt(getPrice3(product)) * product.quantity;
+    return total;
+  };
 
-        titles.forEach((title, index) => {
-          title.addEventListener("click", () => {
-            // Remove active class from all menu items
-            titles.forEach((item) => item.classList.remove("active"));
-            // Add active class to the clicked item
-            title.classList.add("active");
+  const getPrice3 = (product) => {
+    if (product.selectedVariation && product.selectedVariation.id) {
+      return product.selectedVariation.price;
+    } else {
+      if (product.product) {
+        return product.product.price;
+      } else {
+        return 0;
+      }
+    }
+  };
 
-            // Remove active class from all content items
-            const contentItems = widgetTab.querySelectorAll(
-              ".widget-content-tab > *"
-            );
-            contentItems.forEach((content) =>
-              content.classList.remove("active")
-            );
+  const getPrice4 = (product) => {
+    if (product.selectedVariation && product.selectedVariation.id) {
+      if (product.selectedVariation.salePrice == 0) {
+        return product.selectedVariation.price;
+      } else {
+        return product.selectedVariation.salePrice;
+      }
+    } else {
+      if (product.product) {
+        if (product.product.salePrice == 0) {
+          return product.product.price;
+        } else {
+          return product.product.salePrice;
+        }
+      } else {
+        return 0;
+      }
+    }
+  };
 
-            // Add active class and fade-in effect to the matching content item
-            const contentActive = contentItems[index];
-            contentActive.classList.add("active");
-            contentActive.style.display = "block";
-            contentActive.style.opacity = 0;
-            setTimeout(() => (contentActive.style.opacity = 1), 0);
-
-            // Hide all siblings' content
-            contentItems.forEach((content, idx) => {
-              if (idx !== index) {
-                content.style.display = "none";
-              }
-            });
-          });
-        });
-      });
+  const handleSubmit = async (order) => {
+    setLoader(true);
+    console.log("Handle submit is getting called!");
+    let orderObj = {
+      ...order,
+      orderStatus: "Cancelled",
+      [`cancelledDate`]: new Date().getTime().toString(),
+      orderStatusScore: 0,
+      cancelNote: "Cacelled by customer",
     };
 
-    // Call the function to initialize the tabs
-    tabs();
+    await updateOrderRedux(orderObj);
+    setLoader(false);
+    toast.success("Order is cancelled!");
+  };
 
-    // Clean up event listeners when the component unmounts
-    return () => {
-      document
-        .querySelectorAll(".widget-menu-tab .item-title")
-        .forEach((title) => {
-          title.removeEventListener("click", () => {});
-        });
+  const orderAgain = async (order) => {
+    setLoader(true);
+    let orderObj = {
+      ...order,
+      id:
+        new Date().getTime().toString() +
+        (order.currentUser
+          ? order.currentUser.id.slice(0, 3)
+          : order.guest.id.slice(0, 3)),
+      orderStatus: "Processing",
+      date: new Date().getTime().toString(),
+      orderStatusScore: 1,
     };
-  }, []);
+    await addToOrderRedux(orderObj);
+    setLoader(false);
+    toast.success("Your new order added successfully!");
+  };
+  let order = null;
+  if (orders.length > 0) {
+    order = orders.find((order) => order.id == orderId);
+  }
+
   return (
     <>
       {order && (
@@ -193,252 +241,714 @@ const OrderDetails = ({ orderId, orders }) => {
           </div>
           <div className="widget-tabs style-has-border widget-order-tab">
             <ul className="widget-menu-tab">
-              <li className="item-title active">
-                <span className="inner">Order Tracking</span>
+              <li
+                className={`item-title ${
+                  seletedTab == "Order Tracking" ? "active" : ""
+                }`}
+              >
+                <span
+                  className="inner"
+                  onClick={() => {
+                    setSelectedTab("Order Tracking");
+                  }}
+                >
+                  Order Tracking
+                </span>
               </li>
-              <li className="item-title">
-                <span className="inner">Item Details</span>
+              <li
+                className={`item-title ${
+                  seletedTab == "Item Details" ? "active" : ""
+                }`}
+              >
+                <span
+                  className="inner"
+                  onClick={() => {
+                    setSelectedTab("Item Details");
+                  }}
+                >
+                  Item Details
+                </span>
               </li>
-              <li className="item-title">
-                <span className="inner">Courier</span>
-              </li>
-              <li className="item-title">
-                <span className="inner">Receiver</span>
+
+              <li
+                className={`item-title ${
+                  seletedTab == "Delivery Address" ? "active" : ""
+                }`}
+              >
+                <span
+                  className="inner"
+                  onClick={() => {
+                    setSelectedTab("Delivery Address");
+                  }}
+                >
+                  Delivery Address
+                </span>
               </li>
             </ul>
             <div className="widget-content-tab">
-              <div className="widget-content-inner active">
-                <div className="widget-timeline">
-                  <ul className="timeline">
-                    <li>
-                      <div
-                        className={`timeline-badge ${
-                          order.orderStatusScore >= 1 ? "success" : ""
-                        }`}
-                      />
-                      <div className="timeline-box">
-                        <a className="timeline-panel" href="#">
-                          <div className="text-2 fw-6"> Order Placed</div>
-                          <span>Your order is successfully placed</span>
-                        </a>
-                        <p>
-                          <strong>Date : </strong>
-                          {new Date(Number(order.date)).toDateString("en-GB")}
-                        </p>
-                        <p>
-                          <strong>Time : </strong>{" "}
-                          {new Date(Number(order.date)).toLocaleTimeString(
-                            "en-GB"
+              <div
+                className={`widget-content-inner ${
+                  seletedTab == "Order Tracking" ? "active" : ""
+                }`}
+              >
+                {order.orderStatus !== "Cancelled" ? (
+                  <p
+                    className="text-2 text_success"
+                    style={{ marginBottom: 10 }}
+                  >
+                    Thank you. Your order has been received
+                  </p>
+                ) : (
+                  <p
+                    className="text-2 text_success"
+                    style={{ marginBottom: 10, color: "red" }}
+                  >
+                    Your order has been cancelled.
+                  </p>
+                )}
+                {order.orderStatus !== "Cancelled" ? (
+                  <div className="widget-timeline">
+                    <ul className="timeline">
+                      <li>
+                        <div
+                          className={`timeline-badge ${
+                            order.orderStatusScore >= 1 ? "success" : ""
+                          }`}
+                        />
+                        <div className="timeline-box">
+                          <a className="timeline-panel" href="#">
+                            <div className="text-2 fw-6"> Order Placed</div>
+                            <span>Your order is successfully placed</span>
+                          </a>
+                          <p>
+                            <strong>Date : </strong>
+                            {new Date(Number(order.date)).toDateString("en-GB")}
+                          </p>
+                          <p>
+                            <strong>Time : </strong>{" "}
+                            {new Date(Number(order.date)).toLocaleTimeString(
+                              "en-GB"
+                            )}
+                          </p>
+                        </div>
+                      </li>
+                      <li>
+                        <div
+                          className={`timeline-badge ${
+                            order.orderStatusScore >= 2 ? "success" : ""
+                          }`}
+                        />
+                        <div className="timeline-box">
+                          <a className="timeline-panel" href="#">
+                            <div className="text-2 fw-6"> Processing</div>
+                            <span>
+                              {order.orderStatusScore >= 2 &&
+                                "We are processing your order."}
+                            </span>
+                          </a>
+                          {order.orderStatusScore >= 2 && (
+                            <>
+                              {" "}
+                              <p>
+                                <strong>Date : </strong>
+                                {new Date(Number(order.date)).toDateString(
+                                  "en-GB"
+                                )}
+                              </p>
+                              <p>
+                                <strong>Time : </strong>{" "}
+                                {new Date(
+                                  Number(order.date)
+                                ).toLocaleTimeString("en-GB")}
+                              </p>
+                            </>
                           )}
-                        </p>
-                      </div>
-                    </li>
-                    <li>
-                      <div
-                        className={`timeline-badge ${
-                          order.orderStatusScore >= 2 ? "success" : ""
-                        }`}
-                      />
-                      <div className="timeline-box">
-                        <a className="timeline-panel" href="#">
-                          <div className="text-2 fw-6"> Processing</div>
-                          <span>
-                            {order.orderStatusScore >= 2 &&
-                              "We are processing your order."}
-                          </span>
-                        </a>
-                        {order.orderStatusScore >= 2 && (
-                          <>
-                            {" "}
-                            <p>
-                              <strong>Date : </strong>
-                              {new Date(Number(order.date)).toDateString(
-                                "en-GB"
-                              )}
-                            </p>
-                            <p>
-                              <strong>Time : </strong>{" "}
-                              {new Date(Number(order.date)).toLocaleTimeString(
-                                "en-GB"
-                              )}
-                            </p>
-                          </>
-                        )}
-                      </div>
-                    </li>
-                    <li>
-                      <div
-                        className={`timeline-badge ${
-                          order.orderStatusScore >= 3 ? "success" : ""
-                        }`}
-                      />
-                      <div className="timeline-box">
-                        <a className="timeline-panel" href="#">
-                          <div className="text-2 fw-6"> Confirmed</div>
-                          <span>
-                            {order.orderStatusScore >= 3 &&
-                              "Your order is confirmed."}
-                          </span>
-                        </a>
-                        {order.orderStatusScore >= 3 && (
-                          <>
-                            {" "}
-                            <p>
-                              <strong>Date : </strong>
-                              {new Date(
-                                Number(order.confirmedDate)
-                              ).toDateString("en-GB")}
-                            </p>
-                            <p>
-                              <strong>Time : </strong>{" "}
-                              {new Date(
-                                Number(order.confirmedDate)
-                              ).toLocaleTimeString("en-GB")}
-                            </p>
-                          </>
-                        )}
-                      </div>
-                    </li>
-                    <li>
-                      <div
-                        className={`timeline-badge ${
-                          order.orderStatusScore >= 4 ? "success" : ""
-                        }`}
-                      />
-                      <div className="timeline-box">
-                        <a className="timeline-panel" href="#">
-                          <div className="text-2 fw-6"> Packing</div>
-                          <span>
-                            {order.orderStatusScore >= 4 &&
-                              "We are packing your order."}
-                          </span>
-                        </a>
-                        {order.orderStatusScore >= 4 && (
-                          <>
-                            {" "}
-                            <p>
-                              <strong>Date : </strong>
-                              {new Date(Number(order.packingDate)).toDateString(
-                                "en-GB"
-                              )}
-                            </p>
-                            <p>
-                              <strong>Time : </strong>{" "}
-                              {new Date(
-                                Number(order.packingDate)
-                              ).toLocaleTimeString()}
-                            </p>
-                          </>
-                        )}
-                      </div>
-                    </li>
-                    <li>
-                      <div
-                        className={`timeline-badge ${
-                          order.orderStatusScore >= 5 ? "success" : ""
-                        }`}
-                      />
-                      <div className="timeline-box">
-                        <a className="timeline-panel" href="#">
-                          <div className="text-2 fw-6"> Delivered</div>
-                          <span
-                            style={{
-                              color:
-                                order.orderStatusScore >= 5 ? "gray" : "white",
-                            }}
-                          >
-                            Your order is delivered.
-                          </span>
-                        </a>
-                        {order.orderStatusScore >= 5 && (
-                          <>
-                            {" "}
-                            <p>
-                              <strong>Date : </strong>
-                              {new Date(
-                                Number(order.deliveredDate)
-                              ).toDateString("en-GB")}
-                            </p>
-                            <p>
-                              <strong>Time : </strong>{" "}
-                              {new Date(
-                                Number(order.deliveredDate)
-                              ).toLocaleTimeString()}
-                            </p>
-                          </>
-                        )}
-                      </div>
-                    </li>
-                  </ul>
-                </div>
+                        </div>
+                      </li>
+                      <li>
+                        <div
+                          className={`timeline-badge ${
+                            order.orderStatusScore >= 3 ? "success" : ""
+                          }`}
+                        />
+                        <div className="timeline-box">
+                          <a className="timeline-panel" href="#">
+                            <div className="text-2 fw-6"> Confirmed</div>
+                            <span>
+                              {order.orderStatusScore >= 3 &&
+                                "Your order is confirmed."}
+                            </span>
+                          </a>
+                          {order.orderStatusScore >= 3 && (
+                            <>
+                              {" "}
+                              <p>
+                                <strong>Date : </strong>
+                                {new Date(
+                                  Number(order.confirmedDate)
+                                ).toDateString("en-GB")}
+                              </p>
+                              <p>
+                                <strong>Time : </strong>{" "}
+                                {new Date(
+                                  Number(order.confirmedDate)
+                                ).toLocaleTimeString("en-GB")}
+                              </p>
+                            </>
+                          )}
+                        </div>
+                      </li>
+                      <li>
+                        <div
+                          className={`timeline-badge ${
+                            order.orderStatusScore >= 4 ? "success" : ""
+                          }`}
+                        />
+                        <div className="timeline-box">
+                          <a className="timeline-panel" href="#">
+                            <div className="text-2 fw-6"> Packing</div>
+                            <span>
+                              {order.orderStatusScore >= 4 &&
+                                "We are packing your order."}
+                            </span>
+                          </a>
+                          {order.orderStatusScore >= 4 && (
+                            <>
+                              {" "}
+                              <p>
+                                <strong>Date : </strong>
+                                {new Date(
+                                  Number(order.packingDate)
+                                ).toDateString("en-GB")}
+                              </p>
+                              <p>
+                                <strong>Time : </strong>{" "}
+                                {new Date(
+                                  Number(order.packingDate)
+                                ).toLocaleTimeString()}
+                              </p>
+                            </>
+                          )}
+                        </div>
+                      </li>
+                      <li>
+                        <div
+                          className={`timeline-badge ${
+                            order.orderStatusScore >= 5 ? "success" : ""
+                          }`}
+                        />
+                        <div className="timeline-box">
+                          <a className="timeline-panel" href="#">
+                            <div className="text-2 fw-6"> Delivered</div>
+                            <span
+                              style={{
+                                color:
+                                  order.orderStatusScore >= 5
+                                    ? "gray"
+                                    : "white",
+                              }}
+                            >
+                              Your order is delivered.
+                            </span>
+                          </a>
+                          {order.orderStatusScore >= 5 && (
+                            <>
+                              {" "}
+                              <p>
+                                <strong>Date : </strong>
+                                {new Date(
+                                  Number(order.deliveredDate)
+                                ).toDateString("en-GB")}
+                              </p>
+                              <p>
+                                <strong>Time : </strong>{" "}
+                                {new Date(
+                                  Number(order.deliveredDate)
+                                ).toLocaleTimeString()}
+                              </p>
+                            </>
+                          )}
+                        </div>
+                      </li>
+                    </ul>
+                  </div>
+                ) : (
+                  <div className="widget-timeline">
+                    <ul className="timeline">
+                      <li>
+                        <div className={`timeline-badge`} />
+                        <div className="timeline-box">
+                          <a className="timeline-panel" href="#">
+                            <div className="text-2 fw-6"> Order Cancelled</div>
+                            <span>Your order is cancelled</span>
+                          </a>
+                          <p>
+                            <strong>Date : </strong>
+                            {new Date(Number(order.cancelledDate)).toDateString(
+                              "en-GB"
+                            )}
+                          </p>
+                          <p>
+                            <strong>Time : </strong>{" "}
+                            {new Date(
+                              Number(order.cancelledDate)
+                            ).toLocaleTimeString("en-GB")}
+                          </p>
+                        </div>
+                      </li>
+                      <li>
+                        <div
+                          className={`timeline-badge ${
+                            order.orderStatusScore >= 2 ? "success" : ""
+                          }`}
+                        />
+                        <div className="timeline-box">
+                          <a className="timeline-panel" href="#">
+                            <div className="text-2 fw-6"> Processing</div>
+                            <span>
+                              {order.orderStatusScore >= 2 &&
+                                "We are processing your order."}
+                            </span>
+                          </a>
+                          {order.orderStatusScore >= 2 && (
+                            <>
+                              {" "}
+                              <p>
+                                <strong>Date : </strong>
+                                {new Date(Number(order.date)).toDateString(
+                                  "en-GB"
+                                )}
+                              </p>
+                              <p>
+                                <strong>Time : </strong>{" "}
+                                {new Date(
+                                  Number(order.date)
+                                ).toLocaleTimeString("en-GB")}
+                              </p>
+                            </>
+                          )}
+                        </div>
+                      </li>
+                      <li>
+                        <div
+                          className={`timeline-badge ${
+                            order.orderStatusScore >= 3 ? "success" : ""
+                          }`}
+                        />
+                        <div className="timeline-box">
+                          <a className="timeline-panel" href="#">
+                            <div className="text-2 fw-6"> Confirmed</div>
+                            <span>
+                              {order.orderStatusScore >= 3 &&
+                                "Your order is confirmed."}
+                            </span>
+                          </a>
+                          {order.orderStatusScore >= 3 && (
+                            <>
+                              {" "}
+                              <p>
+                                <strong>Date : </strong>
+                                {new Date(
+                                  Number(order.confirmedDate)
+                                ).toDateString("en-GB")}
+                              </p>
+                              <p>
+                                <strong>Time : </strong>{" "}
+                                {new Date(
+                                  Number(order.confirmedDate)
+                                ).toLocaleTimeString("en-GB")}
+                              </p>
+                            </>
+                          )}
+                        </div>
+                      </li>
+                      <li>
+                        <div
+                          className={`timeline-badge ${
+                            order.orderStatusScore >= 4 ? "success" : ""
+                          }`}
+                        />
+                        <div className="timeline-box">
+                          <a className="timeline-panel" href="#">
+                            <div className="text-2 fw-6"> Packing</div>
+                            <span>
+                              {order.orderStatusScore >= 4 &&
+                                "We are packing your order."}
+                            </span>
+                          </a>
+                          {order.orderStatusScore >= 4 && (
+                            <>
+                              {" "}
+                              <p>
+                                <strong>Date : </strong>
+                                {new Date(
+                                  Number(order.packingDate)
+                                ).toDateString("en-GB")}
+                              </p>
+                              <p>
+                                <strong>Time : </strong>{" "}
+                                {new Date(
+                                  Number(order.packingDate)
+                                ).toLocaleTimeString()}
+                              </p>
+                            </>
+                          )}
+                        </div>
+                      </li>
+                      <li>
+                        <div
+                          className={`timeline-badge ${
+                            order.orderStatusScore >= 5 ? "success" : ""
+                          }`}
+                        />
+                        <div className="timeline-box">
+                          <a className="timeline-panel" href="#">
+                            <div className="text-2 fw-6"> Delivered</div>
+                            <span
+                              style={{
+                                color:
+                                  order.orderStatusScore >= 5
+                                    ? "gray"
+                                    : "white",
+                              }}
+                            >
+                              Your order is delivered.
+                            </span>
+                          </a>
+                          {order.orderStatusScore >= 5 && (
+                            <>
+                              {" "}
+                              <p>
+                                <strong>Date : </strong>
+                                {new Date(
+                                  Number(order.deliveredDate)
+                                ).toDateString("en-GB")}
+                              </p>
+                              <p>
+                                <strong>Time : </strong>{" "}
+                                {new Date(
+                                  Number(order.deliveredDate)
+                                ).toLocaleTimeString()}
+                              </p>
+                            </>
+                          )}
+                        </div>
+                      </li>
+                    </ul>
+                  </div>
+                )}
               </div>
-              <div className="widget-content-inner">
-                <div className="order-head">
-                  <figure className="img-product">
-                    <img
-                      alt="product"
-                      src="images/products/brown.jpg"
-                      width="720"
-                      height="1005"
-                    />
-                  </figure>
-                  <div className="content">
-                    <div className="text-2 fw-6">Ribbed modal T-shirt</div>
-                    <div className="mt_4">
-                      <span className="fw-6">Price :</span> $28.95
-                    </div>
-                    <div className="mt_4">
-                      <span className="fw-6">Size :</span> XL
+              <div
+                className={`widget-content-inner ${
+                  seletedTab == "Item Details" ? "active" : ""
+                }`}
+              >
+                <div className="tf-page-cart-footer">
+                  <div className="tf-cart-footer-inner">
+                    <div className="tf-page-cart-checkout widget-wrap-checkout">
+                      <ul className="wrap-checkout-product">
+                        {order.orders.map((item, i) => (
+                          <li key={i} className="checkout-product-item">
+                            <figure className="img-product">
+                              <Image
+                                alt="product"
+                                src={
+                                  item.selectedVariation &&
+                                  item.selectedVariation.id &&
+                                  item.selectedVariation.pictures &&
+                                  item.selectedVariation.pictures.length > 0
+                                    ? item.selectedVariation.pictures[0]
+                                    : item.product.pictures[0]
+                                }
+                                width={720}
+                                height={1005}
+                                style={{ objectFit: "cover", borderRadius: 5 }}
+                              />
+                              <span className="quantity">{item.quantity}</span>
+                            </figure>
+                            <div className="content">
+                              <div className="info">
+                                <p
+                                  className="name"
+                                  style={{ maxWidth: "80%", minWidth: "80%" }}
+                                >
+                                  {item.product.name.slice(0, 40)}
+                                </p>
+                                <span className="variant">
+                                  {" "}
+                                  {item.selectedVariation &&
+                                    item.selectedVariation.id &&
+                                    item.selectedVariation.combination.map(
+                                      (comb, index) => (
+                                        <div
+                                          key={index}
+                                          style={{ marginTop: -5 }}
+                                        >
+                                          {item.product.savedAttributes.find(
+                                            (attr) => attr.id == comb.parentId
+                                          )
+                                            ? item.product.savedAttributes.find(
+                                                (attr) =>
+                                                  attr.id == comb.parentId
+                                              ).name
+                                            : ""}
+                                          :{" "}
+                                          <span style={{ fontWeight: "bold" }}>
+                                            {comb.name}
+                                          </span>
+                                        </div>
+                                      )
+                                    )}
+                                </span>
+                              </div>
+                              <span
+                                className="price"
+                                style={{ fontWeight: "bold" }}
+                              >
+                                ৳{singleProductTotal(item)} <br />
+                                <span
+                                  style={{
+                                    fontWeight: "lighter",
+                                    fontSize: 11,
+                                    textDecoration: "line-through",
+                                    marginLeft: 5,
+                                  }}
+                                >
+                                  ৳{singleProductTotal2(item)}
+                                </span>
+                              </span>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+
+                      <div
+                        className="d-flex"
+                        style={{
+                          color: "#31a56d",
+                          fontWeight: "bold",
+                          fontSize: 15,
+                        }}
+                      >
+                        You are saving ৳ {order.discountApplied} in this order.{" "}
+                      </div>
+
+                      <div className="d-flex justify-content-between line pb_20">
+                        <h6 className="fw-5">Subtotal</h6>
+                        <h6 className="total fw-5">৳ {order.subTotal}</h6>
+                      </div>
+                      <div className="d-flex justify-content-between line pb_20">
+                        <h6 className="fw-5">Discount applied</h6>
+                        <h6 className="total fw-5">
+                          {" "}
+                          -৳ {order.discountApplied}
+                        </h6>
+                      </div>
+                      {order.couponApplied && (
+                        <div className="d-flex justify-content-between line pb_20">
+                          <h6 className="fw-5">
+                            Coupon applied{" "}
+                            <span style={{ color: "#ff8084" }}>
+                              ({order.couponApplied.name})
+                            </span>
+                          </h6>
+                          <h6 className="total fw-5">
+                            {" "}
+                            -৳ {order.couponApplied.discount}
+                          </h6>
+                        </div>
+                      )}
+                      <div className="d-flex justify-content-between line pb_20">
+                        <h6 className="fw-5">Delivery Charge</h6>
+                        <h6 className="total fw-5">+৳{order.deliveryCharge}</h6>
+                      </div>
+
+                      <div className="d-flex justify-content-between line pb_20">
+                        <h6 className="fw-5"> Amount Payable</h6>
+                        <h6
+                          className="total fw-5"
+                          style={{ fontWeight: "bold" }}
+                        >
+                          ৳
+                          {order.subTotal +
+                            order.deliveryCharge -
+                            order.discountApplied -
+                            (order.couponApplied
+                              ? order.couponApplied.discount
+                              : 0)}
+                        </h6>
+                      </div>
+                      {order.orderStatus !== "Cancelled" &&
+                      order.orderStatus !== "Processing" ? (
+                        <button
+                          className="tf-btn radius-3 btn-fill btn-icon animate-hover-btn justify-content-center"
+                          onClick={() => {
+                            orderAgain(order);
+                          }}
+                        >
+                          {loader ? (
+                            <ClipLoader
+                              loading={loader}
+                              size={19}
+                              color="white"
+                            />
+                          ) : (
+                            "Order again"
+                          )}
+                        </button>
+                      ) : null}
+                      {order.orderStatus !== "Cancelled" &&
+                      order.orderStatus == "Processing" ? (
+                        <button
+                          className="tf-btn radius-3 btn-fill btn-icon animate-hover-btn justify-content-center"
+                          onClick={() => {
+                            handleSubmit(order);
+                          }}
+                        >
+                          {loader ? (
+                            <ClipLoader
+                              loading={loader}
+                              size={19}
+                              color="white"
+                            />
+                          ) : (
+                            "Cancel Order"
+                          )}
+                        </button>
+                      ) : null}
+                      {order.cancelNote ? (
+                        <div
+                          className="justify-content-center"
+                          style={{ color: "red", fontWeight: "bold" }}
+                        >
+                          Cancelled by customer
+                        </div>
+                      ) : null}
                     </div>
                   </div>
                 </div>
-                <ul>
-                  <li className="d-flex justify-content-between text-2">
-                    <span>Total Price</span>
-                    <span className="fw-6">$28.95</span>
-                  </li>
-                  <li className="d-flex justify-content-between text-2 mt_4 pb_8 line">
-                    <span>Total Discounts</span>
-                    <span className="fw-6">$10</span>
-                  </li>
-                  <li className="d-flex justify-content-between text-2 mt_8">
-                    <span>Order Total</span>
-                    <span className="fw-6">$18.95</span>
-                  </li>
-                </ul>
               </div>
-              <div className="widget-content-inner">
-                <p>
-                  Our courier service is dedicated to providing fast, reliable,
-                  and secure delivery solutions tailored to meet your needs.
-                  Whether you're sending documents, parcels, or larger
-                  shipments, our team ensures that your items are handled with
-                  the utmost care and delivered on time. With a commitment to
-                  customer satisfaction, real-time tracking, and a wide network
-                  of routes, we make it easy for you to send and receive
-                  packages both locally and internationally. Choose our service
-                  for a seamless and efficient delivery experience.
-                </p>
-              </div>
-              <div className="widget-content-inner">
-                <p className="text-2 text_success">
-                  Thank you Your order has been received
-                </p>
-                <ul className="mt_20">
-                  <li>
-                    Order Number : <span className="fw-7">#17493</span>
-                  </li>
-                  <li>
-                    Date : <span className="fw-7"> 17/07/2024, 02:34pm</span>
-                  </li>
-                  <li>
-                    Total : <span className="fw-7">$18.95</span>
-                  </li>
-                  <li>
-                    Payment Methods :
-                    <span className="fw-7">Cash on Delivery</span>
-                  </li>
-                </ul>
+
+              <div
+                className={`widget-content-inner ${
+                  seletedTab == "Delivery Address" ? "active" : ""
+                }`}
+              >
+                {order.currentUser ? (
+                  <ul>
+                    <li>
+                      Name :{" "}
+                      <span className="fw-7">
+                        {" "}
+                        {
+                          order.currentUser.address.find(
+                            (address) => address.defaultShipping
+                          ).fullName
+                        }
+                      </span>
+                    </li>
+                    <li>
+                      Mobile No :{" "}
+                      <span className="fw-7">
+                        {" "}
+                        {
+                          order.currentUser.address.find(
+                            (address) => address.defaultShipping
+                          ).mobileNo
+                        }
+                      </span>
+                    </li>
+                    <li>
+                      Address :{" "}
+                      <span className="fw-7">
+                        {
+                          order.currentUser.address.find(
+                            (address) => address.defaultShipping
+                          ).address
+                        }
+                      </span>
+                    </li>
+                    <li>
+                      District :
+                      <span className="fw-7">
+                        {" "}
+                        {
+                          order.currentUser.address.find(
+                            (address) => address.defaultShipping
+                          ).district
+                        }
+                      </span>
+                    </li>
+                    <li>
+                      Division :
+                      <span className="fw-7">
+                        {" "}
+                        {
+                          order.currentUser.address.find(
+                            (address) => address.defaultShipping
+                          ).division
+                        }
+                      </span>
+                    </li>
+                  </ul>
+                ) : (
+                  <ul>
+                    <li>
+                      Name :{" "}
+                      <span className="fw-7">
+                        {" "}
+                        {
+                          order.guest.address.find(
+                            (address) => address.defaultShipping
+                          ).fullName
+                        }
+                      </span>
+                    </li>
+                    <li>
+                      Mobile No :{" "}
+                      <span className="fw-7">
+                        {" "}
+                        {
+                          order.guest.address.find(
+                            (address) => address.defaultShipping
+                          ).mobileNo
+                        }
+                      </span>
+                    </li>
+                    <li>
+                      Address :{" "}
+                      <span className="fw-7">
+                        {
+                          order.guest.address.find(
+                            (address) => address.defaultShipping
+                          ).address
+                        }
+                      </span>
+                    </li>
+                    <li>
+                      District :
+                      <span className="fw-7">
+                        {" "}
+                        {
+                          order.guest.address.find(
+                            (address) => address.defaultShipping
+                          ).district
+                        }
+                      </span>
+                    </li>
+                    <li>
+                      Division :
+                      <span className="fw-7">
+                        {" "}
+                        {
+                          order.guest.address.find(
+                            (address) => address.defaultShipping
+                          ).division
+                        }
+                      </span>
+                    </li>
+                  </ul>
+                )}
               </div>
             </div>
           </div>
@@ -450,6 +960,13 @@ const OrderDetails = ({ orderId, orders }) => {
 const mapStateToProps = (state) => {
   return {
     orders: state.cart.orders,
+    freeShipping: state.cart.freeShipping,
+    coupon: state.cart.coupon,
   };
 };
-export default connect(mapStateToProps, {})(OrderDetails);
+export default connect(mapStateToProps, {
+  setTotalRedux,
+  updateOrderRedux,
+  addToOrderRedux,
+  getSingleOrderRedux,
+})(OrderDetails);

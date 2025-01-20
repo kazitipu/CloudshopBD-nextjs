@@ -25,6 +25,11 @@ const cartReducer = (state = initialState, action) => {
         orders: [payload, ...state.orders],
         cartData: [],
       };
+    case "GET_SINGLE_ORDER":
+      return {
+        ...state,
+        orders: [payload, ...state.orders],
+      };
     case "GET_ALL_ORDERS":
       return {
         ...state,
@@ -34,13 +39,16 @@ const cartReducer = (state = initialState, action) => {
     case "UPDATE_ORDER":
       return {
         ...state,
-        orders: state.orders.map((order) => {
-          if (order.id == action.payload.id) {
-            return action.payload;
-          } else {
-            return order;
-          }
-        }),
+        orders:
+          state.orders.length > 0
+            ? state.orders.map((order) => {
+                if (order.id == action.payload.id) {
+                  return action.payload;
+                } else {
+                  return order;
+                }
+              })
+            : [action.payload],
       };
     case "REMOVE_FROM_CART":
       return {

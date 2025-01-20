@@ -52,6 +52,7 @@ import {
   updateAttributeTerm,
   deleteAttributeTerm,
   getSingleProduct,
+  getSingleOrder,
   getAllTopCategories,
   getAllHomeScreenProducts,
   getAllLatestProducts,
@@ -172,6 +173,10 @@ export const getAllProductsRedux = () => async (dispatch) => {
 export const getSingleProductRedux = (id) => async (dispatch) => {
   const product = await getSingleProduct(id);
   dispatch({ type: "GET_SINGLE_PRODUCT", payload: product });
+};
+export const getSingleOrderRedux = (id) => async (dispatch) => {
+  const product = await getSingleOrder(id);
+  dispatch({ type: "GET_SINGLE_ORDER", payload: product });
 };
 export const updateShipmentRequestRedux = (requestObj) => async (dispatch) => {
   const updatedRequest = await updateShipmentRequest(requestObj);
