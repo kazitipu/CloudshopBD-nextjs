@@ -15,6 +15,12 @@ const setUsersReducer = (state = INITIAL_STATE, action) => {
       return { ...state, currentUser: action.payload };
     case "SET_GUEST":
       return { ...state, guest: action.payload };
+    case "UPDATE_ADDRESSBOOK":
+      return {
+        ...state,
+        currentUser: action.payload.guest ? state.currentUser : action.payload,
+        guest: action.payload.guest ? action.payload : state.guest,
+      };
     default:
       return { ...state };
   }

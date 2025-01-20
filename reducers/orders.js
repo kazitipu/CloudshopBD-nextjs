@@ -4,8 +4,7 @@ const setOrdersReducer = (state = INITIAL_STATE, action) => {
   switch (action.type) {
     case "SET_ALL_ORDERS":
       return { ...state, orders: [...action.payload] };
-    case "GET_ALL_ORDERS":
-      return { ...state, orders: action.payload };
+
     case "UPDATE_ORDER":
       return {
         ...state,

@@ -14,7 +14,7 @@ export default function page() {
       <Header2 />
       <div className="tf-page-title">
         <div className="container-full">
-          <div className="heading text-center">My Account Address</div>
+          <div className="heading text-center">My Delivery Address</div>
         </div>
       </div>
       <section className="flat-spacing-11">

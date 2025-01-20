@@ -6,10 +6,11 @@ import Orders from "@/components/othersPages/dashboard/Orders";
 import React from "react";
 
 export const metadata = {
-  title: "My Account Orders || Ecomus - Ultimate Nextjs Ecommerce Template",
-  description: "Ecomus - Ultimate Nextjs Ecommerce Template",
+  title: "My Account Orders || CloudShopBD",
+  description: "ClodShopBD",
 };
-export default function page() {
+export default function page({ searchParams }) {
+  const orderId = searchParams.orderId;
   return (
     <>
       <Header2 />
@@ -25,12 +26,11 @@ export default function page() {
               <DashboardNav />
             </div>
             <div className="col-lg-9">
-              <OrderDetails />
+              <OrderDetails orderId={orderId} />
             </div>
           </div>
         </div>
       </section>
-
       <Footer1 />
     </>
   );

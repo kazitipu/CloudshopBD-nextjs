@@ -33,7 +33,7 @@ import RtlToggle from "@/components/common/RtlToggle";
 import store from "@/store";
 import { Provider } from "react-redux";
 import { getFreeShipping } from "@/firebase/firebase.utils";
-import { setFreeShippingRedux } from "@/actions";
+import { setFreeShippingRedux, setGuestRedux } from "@/actions";
 
 const RootLayout = ({ children }) => {
   const pathname = usePathname();
@@ -60,6 +60,7 @@ const RootLayout = ({ children }) => {
     let getFreeship = async () => {
       let data = await getFreeShipping();
       store.dispatch(setFreeShippingRedux(data.value));
+      store.dispatch(setGuestRedux());
     };
     getFreeship();
     // Cleanup function to remove event listener on component unmount

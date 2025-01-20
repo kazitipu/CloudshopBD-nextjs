@@ -512,19 +512,20 @@ export const deleteUser = async (id) => {
 
 // Orders management (get all orders)
 
-export const getAllOrders = async (orderStatus) => {
-  const ordersCollectionRef = firestore
-    .collection("orders")
-    .where("orderStatus", "==", orderStatus);
+export const getAllOrders = async (userId) => {
   try {
-    const orders = await ordersCollectionRef.get();
+    const orderCollectionRef = collection(firestore, "orders"); // Reference to the 'orders' collection
+    const q = query(orderCollectionRef, where("userId", "==", userId)); // Query to filter orders by userId
+    const querySnapshot = await getDocs(q); // Execute the query
+
     const ordersArray = [];
-    orders.forEach((doc) => {
+    querySnapshot.forEach((doc) => {
       ordersArray.push(doc.data());
     });
     return ordersArray;
   } catch (error) {
-    alert(error);
+    console.error("Error getting orders: ", error);
+    throw new Error("Failed to fetch orders");
   }
 };
 
@@ -549,12 +550,17 @@ export const deleteOrder = async (id) => {
 };
 
 export const getSingleOrder = async (id) => {
-  const orderRef = firestore.doc(`orders/${id}`);
   try {
-    const order = await orderRef.get();
-    return order.data();
+    const orderRef = doc(firestore, "orders", id); // Reference to the specific document
+    const orderSnapshot = await getDoc(orderRef); // Fetch the document
+    if (orderSnapshot.exists()) {
+      return orderSnapshot.data(); // Return the document data
+    } else {
+      throw new Error("Order not found");
+    }
   } catch (error) {
-    alert(error);
+    console.error("Error fetching order:", error);
+    throw new Error("Failed to fetch order");
   }
 };
 
@@ -1838,6 +1844,227 @@ export const addToOrder = async (orderObj) => {
     const updatedSnapshot = await getDoc(orderRef);
     return updatedSnapshot.data();
   }
+};
+
+const updateUserAddressGuest = (currentUser, address) => {
+  // Retrieve user data from localStorage
+  const userData = JSON.parse(localStorage.getItem(`guest`));
+  const addressList = userData?.address || [];
+
+  try {
+    let updatedAddressList;
+    if (address.defaultShipping) {
+      // If the new address is marked as default shipping
+      updatedAddressList = addressList.some((addr) => addr.id === address.id)
+        ? addressList.map((addr) => {
+            if (addr.id === address.id) {
+              return address;
+            } else if (addr.defaultShipping) {
+              return { ...addr, defaultShipping: false };
+            } else {
+              return addr;
+            }
+          })
+        : [
+            address,
+            ...addressList.map((addr) =>
+              addr.defaultShipping ? { ...addr, defaultShipping: false } : addr
+            ),
+          ];
+    } else {
+      // If the new address is not marked as default shipping
+      updatedAddressList = addressList.some((addr) => addr.id === address.id)
+        ? addressList.map((addr) => (addr.id === address.id ? address : addr))
+        : [address, ...addressList];
+    }
+
+    // Update the user data in localStorage
+    const updatedUserData = { ...userData, address: updatedAddressList };
+    localStorage.setItem(`guest`, JSON.stringify(updatedUserData));
+
+    return { ...updatedUserData, id: currentUser.uid };
+  } catch (error) {
+    alert(error);
+    throw error;
+  }
+};
+
+export const updateUserAddress = async (currentUser, address) => {
+  // for guest save the address to localStorage
+  if (currentUser.guest) {
+    return updateUserAddressGuest(currentUser, address);
+  }
+
+  if (!currentUser.uid) {
+    return null;
+  }
+  const userRef = firestore().doc(`users/${currentUser.uid}`);
+  const snapShot = await userRef.get();
+  console.log(snapShot.data());
+  try {
+    if (address.defaultShipping) {
+      await userRef.update({
+        address:
+          snapShot.data().address && snapShot.data().address.length > 0
+            ? snapShot.data().address.find((addr) => addr.id == address.id)
+              ? [
+                  ...snapShot.data().address.map((addr) => {
+                    if (addr.id == address.id) {
+                      return address;
+                    } else {
+                      if (addr.defaultShipping) {
+                        return { ...addr, defaultShipping: false };
+                      } else {
+                        return addr;
+                      }
+                    }
+                  }),
+                ]
+              : [
+                  address,
+                  ...snapShot.data().address.map((addr) => {
+                    if (addr.defaultShipping) {
+                      return { ...addr, defaultShipping: false };
+                    } else {
+                      return addr;
+                    }
+                  }),
+                ]
+            : [address],
+      });
+    } else {
+      await userRef.update({
+        address:
+          snapShot.data().address && snapShot.data().address.length > 0
+            ? snapShot.data().address.find((addr) => addr.id == address.id)
+              ? [
+                  ...snapShot.data().address.map((addr) => {
+                    if (addr.id == address.id) {
+                      return address;
+                    } else {
+                      return addr;
+                    }
+                  }),
+                ]
+              : [address, ...snapShot.data().address]
+            : [address],
+      });
+    }
+  } catch (error) {
+    alert(error);
+  }
+  const updatedSnapShot = await userRef.get();
+  return { ...updatedSnapShot.data(), id: updatedSnapShot.data().uid };
+};
+
+const updateShippingAddressGuest = (currentUser, address) => {
+  // Retrieve user data from localStorage
+  const userData = JSON.parse(localStorage.getItem(`guest`));
+
+  if (!userData || !userData.address) {
+    alert("User data or addresses not found in localStorage.");
+    return null;
+  }
+
+  try {
+    // Update the address list
+    const updatedAddressList = userData.address.map((addr) => {
+      if (addr.id === address.id) {
+        return { ...addr, defaultShipping: true };
+      } else {
+        return { ...addr, defaultShipping: false };
+      }
+    });
+
+    // Save the updated data back to localStorage
+    const updatedUserData = { ...userData, address: updatedAddressList };
+    localStorage.setItem(`guest`, JSON.stringify(updatedUserData));
+
+    return { ...updatedUserData, id: currentUser.uid };
+  } catch (error) {
+    alert(error);
+    throw error;
+  }
+};
+
+export const updateShippingAddress = async (currentUser, address) => {
+  if (currentUser.guest) {
+    return updateShippingAddressGuest(currentUser, address);
+  }
+  if (!currentUser.uid) {
+    return null;
+  }
+  const userRef = firestore().doc(`users/${currentUser.uid}`);
+  const snapShot = await userRef.get();
+  console.log(snapShot.data());
+  try {
+    await userRef.update({
+      address: snapShot.data().address.map((addr) => {
+        if (address.id == addr.id) {
+          return { ...addr, defaultShipping: true };
+        } else {
+          return { ...addr, defaultShipping: false };
+        }
+      }),
+    });
+  } catch (error) {
+    alert(error);
+  }
+  const updatedSnapShot = await userRef.get();
+  return { ...updatedSnapShot.data(), id: updatedSnapShot.data().uid };
+};
+
+const deleteAddressGuest = (currentUser, address) => {
+  // Retrieve user data from localStorage
+  const userData = JSON.parse(localStorage.getItem(`guest`));
+
+  if (!userData || !userData.address) {
+    alert("User data or addresses not found in localStorage.");
+    return null;
+  }
+
+  try {
+    // Filter out the address with the matching id
+    const updatedAddressList = userData.address.filter(
+      (addr) => addr.id !== address.id
+    );
+
+    // Update the user data in localStorage
+    const updatedUserData = { ...userData, address: updatedAddressList };
+    localStorage.setItem(`guest`, JSON.stringify(updatedUserData));
+
+    return { ...updatedUserData, id: currentUser.uid };
+  } catch (error) {
+    alert(error);
+    throw error;
+  }
+};
+
+export const deleteAddress = async (currentUser, address) => {
+  if (currentUser.guest) {
+    return deleteAddressGuest(currentUser, address);
+  }
+  if (!currentUser.uid) {
+    return null;
+  }
+  const userRef = firestore().doc(`users/${currentUser.uid}`);
+  const snapShot = await userRef.get();
+  console.log(snapShot.data());
+  try {
+    await userRef.update({
+      address: snapShot.data().address.filter((addr) => {
+        if (address.id == addr.id) {
+          return false;
+        } else {
+          return true;
+        }
+      }),
+    });
+  } catch (error) {
+    alert(error);
+  }
+  const updatedSnapShot = await userRef.get();
+  return { ...updatedSnapShot.data(), id: updatedSnapShot.data().uid };
 };
 
 export const getAllLatestProducts = async (startAfter) => {
