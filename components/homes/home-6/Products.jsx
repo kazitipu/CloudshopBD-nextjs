@@ -222,10 +222,10 @@ const Products = ({
                                 wishlist.find((wish) => wish.id == product.id)
                               ) {
                                 removeFromWishlistRedux(product, currentUser);
-                                toast("Item removed from wishlist");
+                                toast.success("Item removed from wishlist");
                               } else {
                                 addToWishlistRedux(product, currentUser);
-                                toast("Item added to Wishlist");
+                                toast.success("Item added to Wishlist");
                               }
                             }}
                             className="box-icon bg_white wishlist btn-icon-action"

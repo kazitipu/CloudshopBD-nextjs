@@ -456,7 +456,7 @@ const Checkout = ({
                         ) {
                           setCouponRedux(null);
                           setCoupon(null);
-                          toast(
+                          toast.error(
                             `${number} Coupon code was expired at ${matchedCoupon.expirationDate}`
                           );
                           return;
@@ -474,7 +474,7 @@ const Checkout = ({
                         ) {
                           setCouponRedux(null);
                           setCoupon(null);
-                          toast(
+                          toast.error(
                             `you've reaced the maximum usage limit of coupon ${number}.`
                           );
                           return;
@@ -482,21 +482,21 @@ const Checkout = ({
                         if (matchedCoupon.minimumOrder > state.sumAmount) {
                           setCouponRedux(null);
                           setCoupon(null);
-                          toast(
+                          toast.error(
                             `Please Order at least ${matchedCoupon.minimumOrder}Tk to use this Coupon ${number} `
                           );
                         }
 
                         setCouponRedux(matchedCoupon);
                         setCoupon(matchedCoupon);
-                        toast(
+                        toast.success(
                           `Coupon code ${number} has been applied to your order.`
                         );
                         return;
                       } else {
                         setCouponRedux(null);
                         setCoupon(null);
-                        toast(`${number} is not a valid coupon code.`);
+                        toast.error(`${number} is not a valid coupon code.`);
                         return;
                       }
                     }}

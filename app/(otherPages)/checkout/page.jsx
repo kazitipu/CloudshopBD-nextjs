@@ -11,7 +11,6 @@ export default function page() {
   return (
     <>
       <Header2 />
-
       <Checkout />
       <Footer1 />
     </>

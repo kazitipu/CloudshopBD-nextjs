@@ -15,6 +15,12 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import { algoliasearch } from "algoliasearch";
+
+const searchClient = algoliasearch(
+  "NILPZSAV6Q",
+  "ed5fe19541c284e9330ce3130dc3c109"
+);
 
 var firebaseConfig = {
   apiKey: "AIzaSyAtfJVVFBS0GcYztN-bDzNJJtsxiKRuOm8",
@@ -558,6 +564,27 @@ export const getSingleOrder = async (id) => {
     } else {
       throw new Error("Order not found");
     }
+  } catch (error) {
+    console.error("Error fetching order:", error);
+    throw new Error("Failed to fetch order");
+  }
+};
+export const getSingleAnnouncement = async () => {
+  const today = new Date();
+  const todayFormatted = today.toISOString().split("T")[0];
+  try {
+    const announcementsCollectionRef = collection(firestore, "announcements");
+    const homePageQuery = query(
+      announcementsCollectionRef,
+      where("visible", "==", true)
+    );
+    const announcements = await getDocs(homePageQuery);
+    const announcementsArray = [];
+    announcements.forEach((doc) => {
+      announcementsArray.push(doc.data());
+    });
+    // will most probalby get single document so get the first one
+    return announcementsArray[0];
   } catch (error) {
     console.error("Error fetching order:", error);
     throw new Error("Failed to fetch order");
@@ -2074,6 +2101,60 @@ export const deleteAddress = async (currentUser, address) => {
   return { ...updatedSnapShot.data(), id: updatedSnapShot.data().uid };
 };
 
+export const updateUserGuest = async (currentUser) => {
+  try {
+    // Retrieve user data from local storage
+    const guest = JSON.parse(localStorage.getItem("guest")) || {};
+    // Update user data in local storage
+    const updatedUser = {
+      ...guest,
+      ...currentUser,
+    };
+    // Save the updated users back to local storage
+    localStorage.setItem("guest", JSON.stringify(updatedUser));
+
+    return { ...updatedUser, id: currentUser.uid };
+  } catch (error) {
+    console.error("Error updating user in local storage:", error);
+    throw error;
+  }
+};
+
+export const updateUser = async (currentUser) => {
+  if (currentUser.guest) {
+    return updateUserGuest(currentUser);
+  }
+  if (!currentUser.uid) {
+    return null;
+  }
+
+  const userRef = doc(firestore, `users/${currentUser.uid}`);
+  try {
+    // Fetch the current user document
+    const snapShot = await getDoc(userRef);
+
+    if (!snapShot.exists()) {
+      console.error("User not found");
+      return null;
+    }
+
+    console.log(snapShot.data());
+
+    // Update the user document with merged data
+    await updateDoc(userRef, {
+      ...snapShot.data(),
+      ...currentUser,
+    });
+
+    // Fetch the updated user document
+    const updatedSnapShot = await getDoc(userRef);
+    return { ...updatedSnapShot.data(), id: updatedSnapShot.id };
+  } catch (error) {
+    console.error("Error updating user:", error);
+    throw error; // Re-throw the error for handling elsewhere if needed
+  }
+};
+
 export const getAllLatestProducts = async (startAfter) => {
   try {
     const productsCollectionRef = collection(firestore, "products");
@@ -2511,3 +2592,38 @@ export const deleteAttributeTerm = async (id, parentId) => {
     alert(error);
   }
 };
+
+// const fetchFirestoreData = async () => {
+//   console.log("clicked");
+//   const docs = [];
+//   const querySnapshot = await getDocs(collection(firestore, "products"));
+//   querySnapshot.forEach((doc) => {
+//     docs.push({ id: doc.id, ...doc.data() });
+//   });
+//   return docs;
+// };
+
+// export const updateAlgoliaRecords = async () => {
+//   const firestoreData = await fetchFirestoreData();
+//   // Map Firestore data to Algolia-compatible format
+//   const recordsToUpdate = firestoreData.map((doc) => ({
+//     objectID: doc.id, // Algolia's unique identifier for records
+//     name: doc.name,
+//     selectedBrands: doc.selectedBrands,
+//     selectedCategories: doc.selectedCategories,
+//     selectedTags: doc.selectedTags,
+//     price: doc.price,
+//     pictures: doc.pictures, // Ensure imageField is included
+//   }));
+//   // Batch update Algolia records
+//   try {
+//     const response = await searchClient.saveObjects(
+//       "products",
+//       recordsToUpdate
+//     );
+
+//     console.log("Algolia records updated successfully:", response);
+//   } catch (error) {
+//     console.error("Error updating Algolia records:", error);
+//   }
+// };

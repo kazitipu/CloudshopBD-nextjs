@@ -618,7 +618,7 @@ const Details16 = ({
                             // for guest add to local storage of the browser
                             await addToCartRedux2(cartObj);
                           }
-                          toast("item added to cart.");
+                          toast.success("item added to cart.");
                           setState({
                             ...state,
                           });
@@ -640,10 +640,10 @@ const Details16 = ({
                             wishlist.find((wish) => wish.id == product.id)
                           ) {
                             removeFromWishlistRedux(product, currentUser);
-                            toast("Item removed from wishlist");
+                            toast.success("Item removed from wishlist");
                           } else {
                             addToWishlistRedux(product, currentUser);
-                            toast("Item added to Wishlist");
+                            toast.success("Item added to Wishlist");
                           }
                         }}
                         className="tf-product-btn-wishlist hover-tooltip box-icon bg_white wishlist btn-icon-action"

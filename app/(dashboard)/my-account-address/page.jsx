@@ -12,7 +12,7 @@ export default function page() {
   return (
     <>
       <Header2 />
-      <div className="tf-page-title">
+      <div className="tf-page-title" style={{ padding: 25 }}>
         <div className="container-full">
           <div className="heading text-center">My Delivery Address</div>
         </div>

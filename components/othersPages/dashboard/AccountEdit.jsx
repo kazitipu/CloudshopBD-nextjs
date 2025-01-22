@@ -1,12 +1,49 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
+import toast from "react-hot-toast";
+import { connect } from "react-redux";
+import { updateAttributeRedux, updateUserRedux } from "@/actions";
+const AccountEdit = ({ currentUser, guest, updateUserRedux }) => {
+  const [state, setData] = React.useState({
+    displayName: "",
+    email: "",
+    mobileNumber: "",
+    submited: false,
+  });
 
-export default function AccountEdit() {
+  useEffect(() => {
+    if (currentUser && currentUser.uid) {
+      setData({
+        ...state,
+        displayName: currentUser.displayName ? currentUser.displayName : "",
+        email: currentUser.email ? currentUser.email : "",
+        mobileNumber: currentUser.mobileNumber ? currentUser.mobileNumber : "",
+      });
+    } else if (guest) {
+      setData({
+        ...state,
+        displayName: guest.displayName ? guest.displayName : "",
+        email: guest.email ? guest.email : "",
+        mobileNumber: guest.mobileNumber ? guest.mobileNumber : "",
+      });
+    }
+  }, [currentUser, guest]);
+
   return (
     <div className="my-account-content account-edit">
       <div className="">
         <form
-          onSubmit={(e) => e.preventDefault()}
+          onSubmit={async (e) => {
+            e.preventDefault();
+            let currentUser2 = null;
+            if (currentUser && currentUser.uid) {
+              currentUser2 = currentUser;
+            } else {
+              currentUser2 = guest;
+            }
+            await updateUserRedux({ ...currentUser2, ...state });
+            toast.success("User information updated!");
+          }}
           className=""
           id="form-password-change"
           action="#"
@@ -16,15 +53,44 @@ export default function AccountEdit() {
               className="tf-field-input tf-input"
               placeholder=" "
               type="text"
-              id="property1"
+              id="fullName"
               required
-              name="first name"
+              name="Enter full name"
+              value={state.displayName}
+              onChange={(e) => {
+                setData({
+                  ...state,
+                  displayName: e.target.value,
+                });
+              }}
             />
             <label
               className="tf-field-label fw-4 text_black-2"
-              htmlFor="property1"
+              htmlFor="fullName"
             >
-              First name
+              Full Name
+            </label>
+          </div>
+
+          <div className="tf-field style-1 mb_15">
+            <input
+              className="tf-field-input tf-input"
+              placeholder="Enter your email"
+              type="email"
+              autoComplete="abc@xyz.com"
+              required
+              id="email"
+              name="email"
+              value={state.email}
+              onChange={(e) => {
+                setData({
+                  ...state,
+                  email: e.target.value,
+                });
+              }}
+            />
+            <label className="tf-field-label fw-4 text_black-2" htmlFor="email">
+              Email
             </label>
           </div>
           <div className="tf-field style-1 mb_15">
@@ -32,84 +98,22 @@ export default function AccountEdit() {
               className="tf-field-input tf-input"
               placeholder=" "
               type="text"
+              id="mobileNumber"
               required
-              id="property2"
-              name="last name"
+              name="Enter Mobile Number"
+              value={state.mobileNumber}
+              onChange={(e) => {
+                setData({
+                  ...state,
+                  mobileNumber: e.target.value,
+                });
+              }}
             />
             <label
               className="tf-field-label fw-4 text_black-2"
-              htmlFor="property2"
+              htmlFor="mobileNumber"
             >
-              Last name
-            </label>
-          </div>
-          <div className="tf-field style-1 mb_15">
-            <input
-              className="tf-field-input tf-input"
-              placeholder=" "
-              type="email"
-              autoComplete="abc@xyz.com"
-              required
-              id="property3"
-              name="email"
-            />
-            <label
-              className="tf-field-label fw-4 text_black-2"
-              htmlFor="property3"
-            >
-              Email
-            </label>
-          </div>
-          <h6 className="mb_20">Password Change</h6>
-          <div className="tf-field style-1 mb_30">
-            <input
-              className="tf-field-input tf-input"
-              placeholder=" "
-              type="password"
-              required
-              autoComplete="current-password"
-              id="property4"
-              name="password"
-            />
-            <label
-              className="tf-field-label fw-4 text_black-2"
-              htmlFor="property4"
-            >
-              Current password
-            </label>
-          </div>
-          <div className="tf-field style-1 mb_30">
-            <input
-              className="tf-field-input tf-input"
-              placeholder=" "
-              type="password"
-              id="property5"
-              required
-              autoComplete="current-password"
-              name="password"
-            />
-            <label
-              className="tf-field-label fw-4 text_black-2"
-              htmlFor="property5"
-            >
-              New password
-            </label>
-          </div>
-          <div className="tf-field style-1 mb_30">
-            <input
-              className="tf-field-input tf-input"
-              placeholder=" "
-              type="password"
-              id="property6"
-              required
-              autoComplete="current-password"
-              name="password"
-            />
-            <label
-              className="tf-field-label fw-4 text_black-2"
-              htmlFor="property6"
-            >
-              Confirm password
+              Mobile Number
             </label>
           </div>
           <div className="mb_20">
@@ -124,4 +128,12 @@ export default function AccountEdit() {
       </div>
     </div>
   );
-}
+};
+
+const mapStateToProps = (state) => {
+  return {
+    currentUser: state.users.currentUser,
+    guest: state.users.guest,
+  };
+};
+export default connect(mapStateToProps, { updateUserRedux })(AccountEdit);

@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { connect } from "react-redux";
 const accountLinks = [
   { href: "/my-account", label: "Dashboard" },
   { href: "/my-account-orders", label: "Orders" },
@@ -9,7 +10,7 @@ const accountLinks = [
   { href: "/my-account-wishlist", label: "Wishlist" },
 ];
 
-export default function DashboardNav() {
+const DashboardNav = ({ currentUser }) => {
   const pathname = usePathname();
   return (
     <ul className="my-account-nav">
@@ -25,11 +26,19 @@ export default function DashboardNav() {
           </Link>
         </li>
       ))}
-      <li>
-        <Link href={`/login`} className="my-account-nav-item">
-          Logout
-        </Link>
-      </li>
+      {currentUser && currentUser.uid ? (
+        <li>
+          <Link href={`/login`} className="my-account-nav-item">
+            Logout
+          </Link>
+        </li>
+      ) : null}
     </ul>
   );
-}
+};
+const mapStateToProps = (state) => {
+  return {
+    currentUser: state.users.currentUser,
+  };
+};
+export default connect(mapStateToProps, {})(DashboardNav);

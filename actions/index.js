@@ -70,6 +70,8 @@ import {
   updateUserAddress,
   updateShippingAddress,
   deleteAddress,
+  updateUser,
+  getSingleAnnouncement,
 } from "../firebase/firebase.utils";
 
 export const setAllOrders = (ordersArray) => ({
@@ -356,6 +358,7 @@ export const removeFromWishlistRedux =
     if (currentUser && currentUser.uid) {
       wishlist = await removeFromWishlist(item, currentUser);
     } else {
+      // guest er khetre eta hobe
       wishlist = await removeFromWishlist2(item);
     }
 
@@ -654,6 +657,14 @@ export const updateAttributeRedux = (attrObj) => async (dispatch) => {
   });
 };
 
+export const updateUserRedux = (currentUser) => async (dispatch) => {
+  const updatedUser = await updateUser(currentUser);
+  dispatch({
+    type: "UPDATE_USER",
+    payload: updatedUser,
+  });
+};
+
 export const deleteAttributeRedux = (attrId) => async (dispatch) => {
   await deleteAttribute(attrId);
   dispatch({
@@ -727,6 +738,13 @@ export const getSingleCategoryProductsRedux =
       payload: allProducts,
     });
   };
+export const getSingleAnnouncementRedux = () => async (dispatch) => {
+  const announcement = await getSingleAnnouncement();
+  dispatch({
+    type: "GET_SINGLE_ANNOUNCEMENT",
+    payload: announcement,
+  });
+};
 
 export const updateSingleProductRedux = (productObj) => async (dispatch) => {
   const product = await updateSingleProduct(productObj);

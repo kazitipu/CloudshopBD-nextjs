@@ -2,10 +2,18 @@
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-
 import "./productCard.css";
 import { useRouter } from "next/navigation";
-const ProductCard = ({ product, gridItems = 6 }) => {
+import { connect } from "react-redux";
+import { removeFromWishlistRedux } from "@/actions";
+import toast from "react-hot-toast";
+const ProductCard = ({
+  product,
+  gridItems = 6,
+  removeFromWishlistRedux,
+  currentUser,
+  guest,
+}) => {
   const router = useRouter();
   const divRef = useRef(null);
   const [width, setWidth] = useState(0);
@@ -116,11 +124,29 @@ const ProductCard = ({ product, gridItems = 6 }) => {
               style={{
                 display: "flex",
                 flexDirection: "row",
-
-                fontWeight: "bold",
+                justifyContent: "space-between",
               }}
             >
-              ৳{product.price ? product.price : product.salePrice}
+              <div style={{ fontWeight: "bold" }}>
+                ৳{product.price ? product.price : product.salePrice}
+              </div>
+              <div style={{ fontWeight: "bold" }}>
+                <i
+                  class="icofont-trash"
+                  style={{
+                    float: "right",
+                    marginTop: 3,
+                    cursor: "pointer",
+                    color: "gray",
+                    fontSize: 18,
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeFromWishlistRedux(product, currentUser);
+                    toast.success("Item removed from wishlist.");
+                  }}
+                ></i>
+              </div>
             </div>
           </div>
         </div>
@@ -129,4 +155,12 @@ const ProductCard = ({ product, gridItems = 6 }) => {
   );
 };
 
-export default ProductCard;
+const mapStateToProps = (state) => {
+  return {
+    currentUser: state.users.currentUser,
+    guest: state.users.guest,
+  };
+};
+export default connect(mapStateToProps, { removeFromWishlistRedux })(
+  ProductCard
+);

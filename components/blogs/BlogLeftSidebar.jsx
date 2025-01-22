@@ -17,6 +17,7 @@ import Banner from "@/components/homes/home-headphone/Banner";
 import Products2 from "@/components/homes/home-6/Products";
 import Collections2 from "@/components/homes/home-headphone/Collections2";
 import Announcmentbar from "../common/Announcmentbar";
+import { updateAlgoliaRecords } from "@/firebase/firebase.utils";
 
 export default function BlogLeftSidebar({
   categories,

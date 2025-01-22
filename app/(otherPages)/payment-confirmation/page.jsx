@@ -8,7 +8,7 @@ export const metadata = {
   description: "Ecomus - Ultimate Nextjs Ecommerce Template",
 };
 export default function page({ searchParams }) {
-  // const router = useRouter();
+
   const orderId = searchParams.orderId;
   return (
     <>

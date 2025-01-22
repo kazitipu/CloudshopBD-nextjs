@@ -68,7 +68,7 @@ export default function Footer1({ bgColor = "" }) {
                     <Link href={`/`}>
                       <Image
                         alt="image"
-                        src="/images/logo/logo.svg"
+                        src="/images/logo/cloudshopBD.png"
                         width="136"
                         height="21"
                       />
@@ -76,65 +76,56 @@ export default function Footer1({ bgColor = "" }) {
                   </div>
                   <ul>
                     <li>
+                      <p>For any enquiries contact us </p>
+                    </li>
+                    <li>
                       <p>
-                        Address: 1234 Fashion Street, Suite 567, <br />
-                        New York, NY 10001
+                        Email: <a href="#">clshopbd@gmail.com</a>
                       </p>
                     </li>
                     <li>
                       <p>
-                        Email: <a href="#">info@fashionshop.com</a>
-                      </p>
-                    </li>
-                    <li>
-                      <p>
-                        Phone: <a href="#">(212) 555-1234</a>
+                        Phone: <a href="#">+8801707773082</a>
                       </p>
                     </li>
                   </ul>
-                  <Link href={`/contact-1`} className="tf-btn btn-line">
-                    Get direction
-                    <i className="icon icon-arrow1-top-left" />
-                  </Link>
+
                   <ul className="tf-social-icon d-flex gap-10">
                     <li>
                       <a
-                        href="#"
+                        href="https://www.facebook.com/cloudshopbdfb"
                         className="box-icon w_34 round social-facebook social-line"
+                        target="_blank"
                       >
                         <i className="icon fs-14 icon-fb" />
                       </a>
                     </li>
+
                     <li>
                       <a
-                        href="#"
-                        className="box-icon w_34 round social-twiter social-line"
+                        href="https://www.youtube.com/@cloudshopbd35/videos"
+                        className="box-icon w_34 round social-instagram social-line"
+                        target="_blank"
                       >
-                        <i className="icon fs-12 icon-Icon-x" />
+                        <i className="icon fs-14 icon-youtube" />
                       </a>
                     </li>
                     <li>
                       <a
-                        href="#"
+                        href="https://www.instagram.com/cloud_shop_bd"
                         className="box-icon w_34 round social-instagram social-line"
+                        target="_blank"
                       >
                         <i className="icon fs-14 icon-instagram" />
                       </a>
                     </li>
                     <li>
                       <a
-                        href="#"
+                        href="https://www.tiktok.com/@cloudshopbd.com"
                         className="box-icon w_34 round social-tiktok social-line"
+                        target="_blank"
                       >
                         <i className="icon fs-14 icon-tiktok" />
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="#"
-                        className="box-icon w_34 round social-pinterest social-line"
-                      >
-                        <i className="icon fs-14 icon-pinterest-1" />
                       </a>
                     </li>
                   </ul>
@@ -177,72 +168,34 @@ export default function Footer1({ bgColor = "" }) {
               <div className="col-xl-3 col-md-6 col-12">
                 <div className="footer-newsletter footer-col-block">
                   <div className="footer-heading footer-heading-desktop">
-                    <h6>Sign Up for Email</h6>
+                    <h6>Download App</h6>
                   </div>
                   <div className="footer-heading footer-heading-moblie">
-                    <h6>Sign Up for Email</h6>
+                    <h6>Download App</h6>
                   </div>
                   <div className="tf-collapse-content">
                     <div className="footer-menu_item">
-                      Sign up to get first dibs on new arrivals, sales,
-                      exclusive content, events and more!
-                    </div>
-                    <div
-                      className={`tfSubscribeMsg ${
-                        showMessage ? "active" : ""
-                      }`}
-                    >
-                      {success ? (
-                        <p style={{ color: "rgb(52, 168, 83)" }}>
-                          You have successfully subscribed.
-                        </p>
-                      ) : (
-                        <p style={{ color: "red" }}>Something went wrong</p>
-                      )}
-                    </div>
-                    <form
-                      ref={formRef}
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        sendMail();
-                      }}
-                      className="form-newsletter subscribe-form"
-                      action="#"
-                      method="post"
-                      acceptCharset="utf-8"
-                      data-mailchimp="true"
-                    >
-                      <div className="subscribe-content">
-                        <fieldset className="email">
-                          <input
-                            required
-                            type="email"
-                            name="email-form"
-                            className="subscribe-email"
-                            placeholder="Enter your email...."
-                            tabIndex={0}
-                            aria-required="true"
-                            autoComplete="abc@xyz.com"
+                      <div>
+                        <a
+                          href="https://play.google.com/store/apps/details?id=com.cloudshopbd&hl=en"
+                          target="_blank"
+                        >
+                          <img
+                            src="/images/blog/googlePlay.png"
+                            style={{ width: "50%" }}
                           />
-                        </fieldset>
-                        <div className="button-submit">
-                          <button
-                            className="subscribe-button tf-btn btn-sm radius-3 btn-fill btn-icon animate-hover-btn"
-                            type="submit"
-                          >
-                            Subscribe
-                            <i className="icon icon-arrow1-top-left" />
-                          </button>
-                        </div>
+                        </a>
                       </div>
-                      <div className="subscribe-msg" />
-                    </form>
-                    <div className="tf-cur">
-                      <div className="tf-currencies">
-                        <CurrencySelect />
-                      </div>
-                      <div className="tf-languages">
-                        <LanguageSelect />
+                      <div>
+                        <a
+                          href="https://apps.apple.com/us/app/cloudshopbd/id6479618431"
+                          target="_blank"
+                        >
+                          <img
+                            src="/images/blog/appStore.png"
+                            style={{ width: "50%" }}
+                          />
+                        </a>
                       </div>
                     </div>
                   </div>
@@ -257,19 +210,8 @@ export default function Footer1({ bgColor = "" }) {
               <div className="col-12">
                 <div className="footer-bottom-wrap d-flex gap-20 flex-wrap justify-content-between align-items-center">
                   <div className="footer-menu_item">
-                    © {new Date().getFullYear()} Ecomus Store. All Rights
+                    © {new Date().getFullYear()} CloudshopBD.com All Rights
                     Reserved
-                  </div>
-                  <div className="tf-payment">
-                    {paymentImages.map((image, index) => (
-                      <Image
-                        key={index}
-                        src={image.src}
-                        width={image.width}
-                        height={image.height}
-                        alt={image.alt}
-                      />
-                    ))}
                   </div>
                 </div>
               </div>

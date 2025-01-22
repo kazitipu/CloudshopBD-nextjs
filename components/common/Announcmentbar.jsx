@@ -1,9 +1,15 @@
 "use client";
 import React, { useEffect } from "react";
-
-export default function Announcmentbar({ bgColor = "bg_violet" }) {
+import { connect } from "react-redux";
+import { getSingleAnnouncementRedux } from "@/actions";
+const Announcmentbar = ({
+  bgColor = "bg_violet",
+  getSingleAnnouncementRedux,
+  announcement,
+}) => {
   useEffect(() => {
     var closeAnnouncement = function () {
+      getSingleAnnouncementRedux();
       document
         .querySelectorAll(".close-announcement-bar")
         .forEach(function (btn) {
@@ -27,54 +33,23 @@ export default function Announcmentbar({ bgColor = "bg_violet" }) {
     <div className={`announcement-bar ${bgColor}`}>
       <div className="wrap-announcement-bar">
         <div className="box-sw-announcement-bar speed-1">
-          <div className="announcement-bar-item">
-            <p>FREE SHIPPING AND RETURNS</p>
-          </div>
-          <div className="announcement-bar-item">
-            <p>NEW SEASON, NEW STYLES: FASHION SALE YOU CAN'T MISS</p>
-          </div>
-          <div className="announcement-bar-item">
-            <p>LIMITED TIME OFFER: FASHION SALE YOU CAN'T RESIST</p>
-          </div>
-          <div className="announcement-bar-item">
-            <p>FREE SHIPPING AND RETURNS</p>
-          </div>
-          <div className="announcement-bar-item">
-            <p>NEW SEASON, NEW STYLES: FASHION SALE YOU CAN'T MISS</p>
-          </div>
-          <div className="announcement-bar-item">
-            <p>LIMITED TIME OFFER: FASHION SALE YOU CAN'T RESIST</p>
-          </div>
-          <div className="announcement-bar-item">
-            <p>FREE SHIPPING AND RETURNS</p>
-          </div>
-          <div className="announcement-bar-item">
-            <p>NEW SEASON, NEW STYLES: FASHION SALE YOU CAN'T MISS</p>
-          </div>
-          <div className="announcement-bar-item">
-            <p>LIMITED TIME OFFER: FASHION SALE YOU CAN'T RESIST</p>
-          </div>
-          <div className="announcement-bar-item">
-            <p>FREE SHIPPING AND RETURNS</p>
-          </div>
-          <div className="announcement-bar-item">
-            <p>NEW SEASON, NEW STYLES: FASHION SALE YOU CAN'T MISS</p>
-          </div>
-          <div className="announcement-bar-item">
-            <p>LIMITED TIME OFFER: FASHION SALE YOU CAN'T RESIST</p>
-          </div>
-          <div className="announcement-bar-item">
-            <p>FREE SHIPPING AND RETURNS</p>
-          </div>
-          <div className="announcement-bar-item">
-            <p>NEW SEASON, NEW STYLES: FASHION SALE YOU CAN'T MISS</p>
-          </div>
-          <div className="announcement-bar-item">
-            <p>LIMITED TIME OFFER: FASHION SALE YOU CAN'T RESIST</p>
-          </div>
+          {announcement && (
+            <div className="announcement-bar-item" style={{ paddingLeft: 100 }}>
+              <p>{announcement.name}</p>
+            </div>
+          )}
         </div>
       </div>
       <span className="icon-close close-announcement-bar" />
     </div>
   );
-}
+};
+
+const mapStateToProps = (state) => {
+  return {
+    announcement: state.users.announcement,
+  };
+};
+export default connect(mapStateToProps, { getSingleAnnouncementRedux })(
+  Announcmentbar
+);

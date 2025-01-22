@@ -198,7 +198,7 @@ const RootLayout = ({ children }) => {
             <SearchModal />
             <ToolbarBottom />
             <ToolbarShop />
-            <NewsletterModal />
+            {/* <NewsletterModal /> */}
             <ShareModal />{" "}
           </Context>
         </Provider>
