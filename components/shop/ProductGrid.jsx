@@ -2,7 +2,7 @@ import { products1 } from "@/data/products";
 import React from "react";
 import { ProductCard } from "../shopCards/ProductCard";
 
-export default function ProductGrid({ gridItems, allproducts }) {
+export default function ProductGrid({ gridItems, allproducts, nbHits }) {
   return (
     <>
       <div
@@ -13,7 +13,7 @@ export default function ProductGrid({ gridItems, allproducts }) {
           marginBottom: "24px",
         }}
       >
-        {allproducts.length} product(s) found
+        {nbHits > 0 ? nbHits : allproducts.length} product(s) found
       </div>
       <div className="grid-layout wrapper-shop" data-grid={`grid-${gridItems}`}>
         {/* card product 1 */}

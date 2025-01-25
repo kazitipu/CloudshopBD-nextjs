@@ -47,17 +47,6 @@ const ShopCart = ({
 
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    if (currentUser && currentUser.uid) {
-    } else {
-      // get cart from local storage
-      let cartData = JSON.parse(localStorage.getItem("cart")) || [];
-      let wishlistData = JSON.parse(localStorage.getItem("wishlist"));
-      dispatch(setCartRedux(cartData));
-      dispatch(setReduxWishlist(wishlistData));
-    }
-  }, []);
-
   const addNoteRef = useRef();
   const addGiftRef = useRef();
 

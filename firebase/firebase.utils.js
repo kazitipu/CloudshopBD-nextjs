@@ -17,6 +17,7 @@ import {
 import { getStorage } from "firebase/storage";
 import { algoliasearch } from "algoliasearch";
 
+// this api key is different from search api. every api key is different
 const searchClient = algoliasearch(
   "NILPZSAV6Q",
   "ed5fe19541c284e9330ce3130dc3c109"
@@ -37,6 +38,79 @@ export const auth = getAuth(app);
 export const firestore = getFirestore(app);
 export const storage = getStorage(app);
 
+export const createUserProfileDocument = async (userAuth, additionalData) => {
+  if (!userAuth) return;
+  if (userAuth.isAnonymous) return;
+
+  console.log(additionalData);
+
+  // Reference for admins collection
+  const adminRef = doc(firestore, `admins/${userAuth.uid}`);
+  const adminSnapShot = await getDoc(adminRef);
+
+  if (adminSnapShot.exists()) return; // If user is an admin, no further action required
+
+  // Reference for users collection
+  const userRef = doc(firestore, `users/${userAuth.uid}`);
+  const snapShot = await getDoc(userRef);
+
+  if (!snapShot.exists()) {
+    console.log(userAuth);
+    const { email, displayName } = userAuth;
+    const createdAt = new Date();
+
+    try {
+      console.log("Creating user document...");
+
+      // Increment user count
+      const userCount = await incrementUserCountByOne();
+
+      // Create the user document in Firestore
+      await setDoc(userRef, {
+        userId: userCount < 10 ? `0${userCount}` : `${userCount}`,
+        uid: userAuth.uid,
+        id: userAuth.uid,
+        email,
+        createdAt,
+        ...additionalData,
+        ...(displayName ? { displayName } : {}),
+        myWallet: 0,
+        address: "",
+        status: "Customer",
+      });
+    } catch (error) {
+      console.error("Error creating user document:", error.message);
+    }
+  }
+  return userRef;
+};
+
+const incrementUserCountByOne = async () => {
+  const countRef = doc(firestore, `userCount/count`);
+
+  // Fetch the current snapshot
+  const snapShot = await getDoc(countRef);
+
+  if (!snapShot.exists()) {
+    // If the document doesn't exist, create it with initial user count
+    try {
+      await setDoc(countRef, {
+        userCount: 1,
+      });
+    } catch (error) {
+      alert(error.message);
+    }
+  } else {
+    // If the document exists, increment the user count
+    try {
+      await updateDoc(countRef, {
+        userCount: snapShot.data().userCount + 1,
+      });
+    } catch (error) {
+      alert(error.message);
+    }
+  }
+};
 export const createAdminProfileDocument = async (userAuth, additionalData) => {
   if (!userAuth) return;
 
@@ -589,6 +663,25 @@ export const getSingleAnnouncement = async () => {
     console.error("Error fetching order:", error);
     throw new Error("Failed to fetch order");
   }
+};
+
+export const fetchAllProducts = async (chunks) => {
+  const db = getFirestore(); // Initialize Firestore instance
+  const promises = chunks.map((chunk) => {
+    // Create a query for each chunk
+    const q = query(collection(db, "products"), where("id", "in", chunk));
+
+    // Fetch documents for the query
+    return getDocs(q).then((querySnapshot) =>
+      querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+    );
+  });
+
+  // Wait for all queries to resolve
+  const results = await Promise.all(promises);
+
+  // Flatten the array of arrays into a single array of documents
+  return results.flat();
 };
 
 export const getSingleAttribute = async (id) => {

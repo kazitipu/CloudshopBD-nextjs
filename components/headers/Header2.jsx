@@ -1,11 +1,21 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Nav from "./Nav";
 import Image from "next/image";
 import Link from "next/link";
 import CartLength from "../common/CartLength";
 import WishlistLength from "../common/WishlistLength";
+import { ReactTyped } from "react-typed";
+import "./Header2.css";
+import { algoliasearch } from "algoliasearch";
+import { ClipLoader } from "react-spinners";
+import { useRouter } from "next/navigation";
+// search api key for use in client side code
+export const searchClient = algoliasearch(
+  "NILPZSAV6Q",
+  "f8dd9476cf54f47a7e1594f3f3b238cb"
+);
 export default function Header2({
   textClass,
   bgColor = "",
@@ -14,6 +24,34 @@ export default function Header2({
   Linkfs = "",
 }) {
   const [searchBarValue, setSearchBarValue] = useState("");
+  const [products, setProducts] = useState([]);
+  const [nbHits, setNbHits] = useState(0);
+  const [loader, setLoader] = useState(false);
+  const router = useRouter();
+  useEffect(() => {
+    console.log("searchbar value is getting changed outside");
+    const getAlgoliaProducts = async () => {
+      if (searchBarValue && searchBarValue.length >= 3) {
+        console.log("searchbar value is getting changed inside");
+        setLoader(true);
+        const response = await searchClient.searchSingleIndex({
+          indexName: "products",
+          searchParams: { query: searchBarValue },
+        });
+        console.log(response);
+        if (response && response.hits && response.hits.length > 0) {
+          setProducts(response.hits);
+          setNbHits(response.nbHits);
+        }
+        setLoader(false);
+      }
+      if (searchBarValue == "") {
+        setProducts([]);
+        setNbHits(0);
+      }
+    };
+    getAlgoliaProducts();
+  }, [searchBarValue]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -62,29 +100,53 @@ export default function Header2({
           </div>
           <div className="col-xl-5 tf-md-hidden">
             <div className="box-navigation text-center">
-              <div className="top-searchbar-container-2">
+              <div
+                className="top-searchbar-container-2"
+                style={{ position: "relative" }}
+              >
                 <form
                   className="form_search top-form form-search2"
                   role="form"
-                  // onSubmit={this.handleSearchBarSubmit}
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    setProducts([]);
+                    setNbHits(0);
+                    setLoader(false);
+                    router.push(`/shop-default?searchParam=${searchBarValue}`);
+                    setSearchBarValue("");
+                  }}
                   style={{
                     borderRadius: "0px",
                     display: "flex",
                     flexDirection: "row",
                     justifyContent: "space-between",
+                    border: "2px solid gainsboro",
                   }}
                 >
-                  <input
-                    id="query search-autocomplete"
-                    type="search"
-                    placeholder="Search for products"
-                    value={searchBarValue}
-                    onChange={handleChange}
-                    name="searchBarValue"
-                    className="nav-search nav-search-field"
-                    aria-expanded="true"
-                    style={{ color: "black", fontSize: 15 }}
-                  />
+                  <ReactTyped
+                    strings={[
+                      "Search for products",
+                      "Search for categories",
+                      "Search for brands",
+                    ]}
+                    typeSpeed={40}
+                    backSpeed={50}
+                    attr="placeholder"
+                    loop
+                    style={{ minWidth: "80%" }}
+                  >
+                    <input
+                      id="query search-autocomplete typed-input"
+                      type="search"
+                      value={searchBarValue}
+                      onChange={handleChange}
+                      name="searchBarValue"
+                      className="nav-search nav-search-field"
+                      aria-expanded="true"
+                      style={{ color: "black", fontSize: 15, border: 0 }}
+                    />
+                  </ReactTyped>
+
                   <div
                     style={{
                       display: "flex",
@@ -93,7 +155,6 @@ export default function Header2({
                     }}
                   >
                     <button
-                      type="submit"
                       style={{
                         position: "relative",
                         backgroundColor: "rgb(238 54 90)",
@@ -105,7 +166,6 @@ export default function Header2({
                         borderBottomRightRadius: 5,
                         border: "none",
                       }}
-                      // onClick={this.handleSearchBarSubmit}
                     >
                       <i
                         className="icon icon-search"
@@ -120,6 +180,197 @@ export default function Header2({
                     </button>
                   </div>
                 </form>
+                {loader ? (
+                  <ul
+                    className="list-group position-absolute w-100"
+                    style={{
+                      maxHeight: "500px",
+                      overflowY: "auto",
+                      zIndex: 1000,
+                      borderBottom: "1px solid gainsboro",
+                    }}
+                  >
+                    <li
+                      className="list-group-item"
+                      style={{
+                        cursor: "pointer",
+                        borderRadius: 0,
+                        border: 0,
+                        padding: 10,
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "row",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <ClipLoader
+                          loading={loader}
+                          size={28}
+                          color="#ec345b"
+                        />
+                      </div>
+                    </li>
+                  </ul>
+                ) : products.length > 0 ? (
+                  <ul
+                    className="list-group position-absolute w-100"
+                    style={{
+                      maxHeight: "500px",
+                      overflowY: "auto",
+                      zIndex: 1000,
+                      borderBottom: "1px solid gainsboro",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        padding: "5px 10px",
+                        background: "white",
+                      }}
+                    >
+                      <div style={{ color: "#ec345b", fontWeight: "bold" }}>
+                        {nbHits} items found
+                      </div>
+                      <div
+                        style={{
+                          color: "#ec345b",
+                          textDecoration: "underline",
+                          fontSize: 14,
+                          cursor: "pointer",
+                        }}
+                        onClick={() => {
+                          setProducts([]);
+                          setNbHits(0);
+                          setLoader(false);
+                          router.push(
+                            `/shop-default?searchParam=${searchBarValue}`
+                          );
+                          setSearchBarValue("");
+                        }}
+                      >
+                        see all
+                      </div>
+                    </div>
+
+                    {products.map((product, index) => {
+                      return (
+                        <li
+                          className="list-group-item"
+                          key={index}
+                          style={{
+                            cursor: "pointer",
+                            borderRadius: 0,
+                            borderBottom: "1px solid gainsboro",
+                            padding: 10,
+                          }}
+                          onClick={() => {
+                            console.log(product);
+                            router.push(
+                              `/product-swatch-image-rounded/${product.objectID}`
+                            );
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              flexDirection: "row",
+                              justifyContent: "space-between",
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: "flex",
+                                flexDirection: "row",
+                                justifyContent: "flex-start",
+                              }}
+                            >
+                              <img
+                                src={
+                                  product.pictures &&
+                                  product.pictures.length > 0
+                                    ? product.pictures[0]
+                                    : ""
+                                }
+                                style={{
+                                  height: 80,
+                                  width: 80,
+                                  borderRadius: 5,
+                                  border: "1px solid gainsboro",
+                                }}
+                              />
+                              <div style={{ padding: 5, position: "relative" }}>
+                                <div
+                                  className="two-lines2"
+                                  style={{ textAlign: "left" }}
+                                >
+                                  {product.name}
+                                </div>
+                                <div
+                                  style={{
+                                    textAlign: "left",
+                                    position: "absolute",
+                                    bottom: "10px",
+                                    color: "#ec345b",
+                                    fontWeight: "bold",
+                                  }}
+                                >
+                                  ৳{product.price ? product.price : ""}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : !loader && searchBarValue.length >= 3 ? (
+                  <ul
+                    className="list-group position-absolute w-100"
+                    style={{
+                      maxHeight: "500px",
+                      overflowY: "auto",
+                      zIndex: 1000,
+                      borderBottom: "1px solid gainsboro",
+                    }}
+                  >
+                    <li
+                      className="list-group-item"
+                      style={{
+                        cursor: "pointer",
+                        borderRadius: 0,
+                        border: 0,
+                        padding: 10,
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "row",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            flexDirection: "row",
+                            justifyContent: "flex-start",
+                          }}
+                        >
+                          <div style={{ padding: 5, position: "relative" }}>
+                            <div className="two-lines2">
+                              No matching results found
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                  </ul>
+                ) : null}
               </div>
             </div>
           </div>
@@ -158,7 +409,7 @@ export default function Header2({
           </div>
         </div>
         <div className="row hide-row-in-pc">
-          <div style={{ marginTop: 5, marginBottom: 10 }}>
+          <div style={{ marginTop: 5, marginBottom: 10, position: "relative" }}>
             <form
               className="form_search top-form form-search2"
               role="form"
@@ -169,17 +420,29 @@ export default function Header2({
                 justifyContent: "space-between",
               }}
             >
-              <input
-                id="query search-autocomplete"
-                type="search"
-                placeholder="Search for products"
-                value={searchBarValue}
-                onChange={handleChange}
-                name="searchBarValue"
-                className="nav-search nav-search-field"
-                aria-expanded="true"
-                style={{ color: "black", fontSize: 14 }}
-              />
+              <ReactTyped
+                strings={[
+                  "Search for products",
+                  "Search for categories",
+                  "Search for brands",
+                ]}
+                typeSpeed={40}
+                backSpeed={50}
+                attr="placeholder"
+                loop
+                style={{ minWidth: "80%" }}
+              >
+                <input
+                  id="query search-autocomplete"
+                  type="search"
+                  value={searchBarValue}
+                  onChange={handleChange}
+                  name="searchBarValue"
+                  className="nav-search nav-search-field"
+                  aria-expanded="true"
+                  style={{ color: "black", fontSize: 14 }}
+                />
+              </ReactTyped>
               <div
                 style={{
                   display: "flex",
@@ -214,6 +477,195 @@ export default function Header2({
                 </button>
               </div>
             </form>
+            {loader ? (
+              <ul
+                className="list-group position-absolute w-100"
+                style={{
+                  maxHeight: "500px",
+                  overflowY: "auto",
+                  zIndex: 1000,
+                  borderBottom: "1px solid gainsboro",
+                  maxWidth: "95%",
+                }}
+              >
+                <li
+                  className="list-group-item"
+                  style={{
+                    cursor: "pointer",
+                    borderRadius: 0,
+                    border: 0,
+                    padding: 10,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <ClipLoader loading={loader} size={28} color="#ec345b" />
+                  </div>
+                </li>
+              </ul>
+            ) : products.length > 0 ? (
+              <ul
+                className="list-group position-absolute w-100"
+                style={{
+                  maxHeight: "500px",
+                  overflowY: "auto",
+                  zIndex: 1000,
+                  borderBottom: "1px solid gainsboro",
+                  maxWidth: "95%",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    padding: "5px 10px",
+                    background: "white",
+                  }}
+                >
+                  <div style={{ color: "#ec345b", fontWeight: "bold" }}>
+                    {nbHits} items found
+                  </div>
+                  <div
+                    style={{
+                      color: "#ec345b",
+                      textDecoration: "underline",
+                      fontSize: 14,
+                      cursor: "pointer",
+                    }}
+                    onClick={() => {
+                      setProducts([]);
+                      setNbHits(0);
+                      setLoader(false);
+                      router.push(
+                        `/shop-default?searchParam=${searchBarValue}`
+                      );
+                      setSearchBarValue("");
+                    }}
+                  >
+                    see all
+                  </div>
+                </div>
+
+                {products.map((product, index) => {
+                  return (
+                    <li
+                      className="list-group-item"
+                      key={index}
+                      style={{
+                        cursor: "pointer",
+                        borderRadius: 0,
+                        borderBottom: "1px solid gainsboro",
+                        padding: 10,
+                      }}
+                      onClick={() => {
+                        console.log(product);
+                        router.push(
+                          `/product-swatch-image-rounded/${product.objectID}`
+                        );
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "row",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            flexDirection: "row",
+                            justifyContent: "flex-start",
+                          }}
+                        >
+                          <img
+                            src={
+                              product.pictures && product.pictures.length > 0
+                                ? product.pictures[0]
+                                : ""
+                            }
+                            style={{
+                              height: 80,
+                              width: 80,
+                              borderRadius: 5,
+                              border: "1px solid gainsboro",
+                            }}
+                          />
+                          <div style={{ padding: 5, position: "relative" }}>
+                            <div
+                              className="two-lines2"
+                              style={{ textAlign: "left" }}
+                            >
+                              {product.name}
+                            </div>
+                            <div
+                              style={{
+                                textAlign: "left",
+                                position: "absolute",
+                                bottom: "10px",
+                                color: "#ec345b",
+                                fontWeight: "bold",
+                              }}
+                            >
+                              ৳{product.price ? product.price : ""}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : !loader && searchBarValue.length >= 3 ? (
+              <ul
+                className="list-group position-absolute w-100"
+                style={{
+                  maxHeight: "500px",
+                  maxWidth: "95%",
+                  overflowY: "auto",
+                  zIndex: 1000,
+                  borderBottom: "1px solid gainsboro",
+                }}
+              >
+                <li
+                  className="list-group-item"
+                  style={{
+                    cursor: "pointer",
+                    borderRadius: 0,
+                    border: 0,
+                    padding: 10,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        justifyContent: "flex-start",
+                      }}
+                    >
+                      <div style={{ padding: 5, position: "relative" }}>
+                        <div className="two-lines2">
+                          No matching results found
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            ) : null}
           </div>
         </div>
         {/* for header navbar comment out the below lines  */}

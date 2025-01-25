@@ -1,7 +1,61 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
-export default function Register() {
+import { connect } from "react-redux";
+import toast from "react-hot-toast";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/firebase/firebase.utils";
+import { setAdditionalDataRedux } from "@/actions";
+import { ClipLoader } from "react-spinners";
+const Register = ({ setAdditionalDataRedux }) => {
+  const [formData, setData] = React.useState({
+    firstName: "",
+    mobileNumber: "",
+    email: "",
+    password: "",
+    cpassword: "",
+  });
+  const [state, setDatapassword] = React.useState({ secureEntry: true });
+  const [loader, setLoader] = useState(false);
+  const createAccountWithEmailAndPassword = async () => {
+    const { firstName, email, mobileNumber, password, cpassword } = formData;
+    if (!firstName || !email || !mobileNumber || !password || !cpassword) {
+      toast.error("Please fill all missing information.");
+      return;
+    }
+    if (password !== cpassword) {
+      toast.error("Password didn't match");
+      return;
+    }
+    setAdditionalDataRedux({
+      firstName,
+      mobileNumber,
+      password,
+      displayName: firstName,
+    });
+    setLoader(true);
+    await createUserWithEmailAndPassword(auth, email, password)
+      .then(async (userAuth) => {
+        console.log(userAuth.user);
+        toast.success("User account created & signed in!");
+        setData({});
+        setLoader(false);
+        window.document.getElementById("close-btn").click();
+      })
+      .catch((error) => {
+        if (error.code === "auth/email-already-in-use") {
+          toast.error("That email address is already in use!");
+          setLoader(false);
+        }
+
+        if (error.code === "auth/invalid-email") {
+          toast.error("That email address is invalid!");
+          setLoader(false);
+        }
+        setLoader(false);
+      });
+  };
+
   return (
     <div
       className="modal modalCentered fade form-sign-in modal-part-content"
@@ -11,6 +65,7 @@ export default function Register() {
         <div className="modal-content">
           <div className="header">
             <div className="demo-title">Register</div>
+
             <span
               className="icon-close icon-close-popup"
               data-bs-dismiss="modal"
@@ -25,9 +80,16 @@ export default function Register() {
                   type="text"
                   required
                   name=""
+                  value={formData.firstName}
+                  onChange={(e) => {
+                    setData({
+                      ...formData,
+                      firstName: e.target.value,
+                    });
+                  }}
                 />
                 <label className="tf-field-label" htmlFor="">
-                  First name
+                  Full Name *
                 </label>
               </div>
               <div className="tf-field style-1">
@@ -37,11 +99,19 @@ export default function Register() {
                   type="text"
                   required
                   name=""
+                  value={formData.mobileNumber}
+                  onChange={(e) => {
+                    setData({
+                      ...formData,
+                      mobileNumber: e.target.value,
+                    });
+                  }}
                 />
                 <label className="tf-field-label" htmlFor="">
-                  Last name
+                  Mobile Number *
                 </label>
               </div>
+
               <div className="tf-field style-1">
                 <input
                   className="tf-field-input tf-input"
@@ -50,6 +120,13 @@ export default function Register() {
                   autoComplete="abc@xyz.com"
                   required
                   name=""
+                  value={formData.email}
+                  onChange={(e) => {
+                    setData({
+                      ...formData,
+                      email: e.target.value,
+                    });
+                  }}
                 />
                 <label className="tf-field-label" htmlFor="">
                   Email *
@@ -63,19 +140,52 @@ export default function Register() {
                   required
                   name=""
                   autoComplete="current-password"
+                  value={formData.password}
+                  onChange={(e) => {
+                    setData({
+                      ...formData,
+                      password: e.target.value,
+                    });
+                  }}
                 />
                 <label className="tf-field-label" htmlFor="">
                   Password *
                 </label>
               </div>
+              <div className="tf-field style-1">
+                <input
+                  className="tf-field-input tf-input"
+                  placeholder=" "
+                  type="password"
+                  required
+                  name=""
+                  autoComplete="current-password"
+                  value={formData.cpassword}
+                  onChange={(e) => {
+                    setData({
+                      ...formData,
+                      cpassword: e.target.value,
+                    });
+                  }}
+                />
+                <label className="tf-field-label" htmlFor="">
+                  Confirm Password *
+                </label>
+              </div>
               <div className="bottom">
                 <div className="w-100">
-                  <Link
-                    href={`/register`}
+                  <button
                     className="tf-btn btn-fill animate-hover-btn radius-3 w-100 justify-content-center"
+                    onClick={async () => {
+                      await createAccountWithEmailAndPassword();
+                    }}
                   >
-                    <span>Register</span>
-                  </Link>
+                    {loader ? (
+                      <ClipLoader color="white" loading={loader} size={20} />
+                    ) : (
+                      <span>Register</span>
+                    )}
+                  </button>
                 </div>
                 <div className="w-100">
                   <a
@@ -89,9 +199,20 @@ export default function Register() {
                 </div>
               </div>
             </form>
+            <span
+              className="icon-close icon-close-popup"
+              data-bs-dismiss="modal"
+              id="close-btn"
+              style={{ color: "white" }}
+            />
           </div>
         </div>
       </div>
     </div>
   );
-}
+};
+
+const mapStateToProps = (state) => {
+  return {};
+};
+export default connect(mapStateToProps, { setAdditionalDataRedux })(Register);

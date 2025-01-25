@@ -1,0 +1,21 @@
+.two-lines2 {
+  font-weight: bold;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  line-height: 1.53em;
+  height: 3em;
+  text-overflow: ellipsis;
+}
+
+.list-group-item:hover {
+  background-color: #fff3f6;
+}
+
+.typed-input::placeholder {
+  color: #ff5733; /* Change this to your desired color */
+  font-style: italic; /* Optional */
+  opacity: 1; /* Ensure full visibility */
+}

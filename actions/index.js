@@ -216,6 +216,12 @@ export const setGuestRedux = () => async (dispatch) => {
     payload: guest2,
   });
 };
+export const setCurrentUserRedux = (currentUser) => async (dispatch) => {
+  dispatch({
+    type: "SET_CURRENT_USER",
+    payload: currentUser,
+  });
+};
 export const getAllPaymentRequestRedux = () => async (dispatch) => {
   const paymentRequestArray = await getAllPaymentRequest();
   dispatch({ type: "GET_ALL_PAYMENT_REQUEST", payload: paymentRequestArray });
@@ -391,6 +397,13 @@ export const setCartRedux = (cartData) => async (dispatch) => {
     payload: cartData,
   });
 };
+
+export function setAdditionalDataRedux(data) {
+  return {
+    type: "SET_ADDITIONAL_DATA",
+    payload: data,
+  };
+}
 
 export const getAllOrdersRedux = (currentUserId) => async (dispatch) => {
   const orders = await getAllOrders(currentUserId);

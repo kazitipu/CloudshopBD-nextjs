@@ -32,9 +32,17 @@ import ScrollTop from "@/components/common/ScrollTop";
 import RtlToggle from "@/components/common/RtlToggle";
 import store from "@/store";
 import { Provider } from "react-redux";
-import { getFreeShipping } from "@/firebase/firebase.utils";
-import { setFreeShippingRedux, setGuestRedux } from "@/actions";
-
+import { getFreeShipping, auth } from "@/firebase/firebase.utils";
+import {
+  setFreeShippingRedux,
+  setGuestRedux,
+  setCurrentUserRedux,
+  setCartRedux,
+  setReduxWishlist,
+} from "@/actions";
+import { onAuthStateChanged } from "firebase/auth";
+import { useSelector } from "react-redux";
+import AppNavigator from "./appNavigator";
 const RootLayout = ({ children }) => {
   const pathname = usePathname();
 
@@ -46,6 +54,7 @@ const RootLayout = ({ children }) => {
       });
     }
   }, []);
+
   useEffect(() => {
     const handleScroll = () => {
       const header = document.querySelector("header");
@@ -60,7 +69,6 @@ const RootLayout = ({ children }) => {
     let getFreeship = async () => {
       let data = await getFreeShipping();
       store.dispatch(setFreeShippingRedux(data.value));
-      store.dispatch(setGuestRedux());
     };
     getFreeship();
     // Cleanup function to remove event listener on component unmount
@@ -177,30 +185,7 @@ const RootLayout = ({ children }) => {
           </div>
         </div>{" "}
         <Provider store={store}>
-          <Context>
-            <div id="wrapper">{children}</div>
-            {/* <RtlToggle /> */}
-            <HomesModal /> <QuickView />
-            <QuickAdd />
-            <ProductSidebar />
-            <Compare />
-            <ShopCart />
-            <AskQuestion />
-            <BlogSidebar />
-            <ColorCompare />
-            <DeliveryReturn />
-            <FindSize />
-            <Login />
-            <UserProfile />
-            <MobileMenu />
-            <Register />
-            <ResetPass />
-            <SearchModal />
-            <ToolbarBottom />
-            <ToolbarShop />
-            {/* <NewsletterModal /> */}
-            <ShareModal />{" "}
-          </Context>
+          <AppNavigator children={children} />
         </Provider>
         <ScrollTop />
         <Toaster
