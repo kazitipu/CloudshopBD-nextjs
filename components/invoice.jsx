@@ -384,6 +384,7 @@ const Invoice = ({
                             borderBottom: "1px solid gainsboro",
                           }}
                         >
+                          {" "}
                           ৳ {order.subTotal}
                         </td>
                       </tr>
@@ -420,7 +421,6 @@ const Invoice = ({
                             borderBottom: "1px solid gainsboro",
                           }}
                         >
-                          {" "}
                           -৳ {order.discountApplied}
                         </td>
                       </tr>
@@ -498,7 +498,7 @@ const Invoice = ({
                             borderBottom: "1px solid gainsboro",
                           }}
                         >
-                          +৳{order.deliveryCharge}
+                          +৳ {order.deliveryCharge}
                         </td>
                       </tr>
                       <tr className="content">
@@ -532,8 +532,7 @@ const Invoice = ({
                             fontWeight: "bold",
                           }}
                         >
-                          {" "}
-                          ৳
+                          ৳{" "}
                           {order.subTotal +
                             order.deliveryCharge -
                             order.discountApplied -
