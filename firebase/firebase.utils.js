@@ -194,35 +194,47 @@ export const getAllDeviceTokens = async () => {
 };
 
 export const addToWishlist = async (wishlistObj, user) => {
-  if (!user.uid) {
-    return [];
-  }
-  const wishlistRef = firestore().doc(`wishlists/${user.uid}`);
-  const snapShot = await wishlistRef.get();
-  if (!snapShot.exists) {
+  if (user && user.uid) {
+    const wishlistRef = doc(firestore, `wishlists/${user.uid}`);
     try {
-      await wishlistRef.set({
-        wishlist: [wishlistObj],
-      });
-      const updatedSnapshot = await wishlistRef.get();
-      return updatedSnapshot.data().wishlist;
+      const snapShot = await getDoc(wishlistRef);
+
+      if (!snapShot.exists()) {
+        // If the wishlist doesn't exist, create it
+        await setDoc(wishlistRef, {
+          wishlist: [wishlistObj],
+        });
+        const updatedSnapshot = await getDoc(wishlistRef);
+        return updatedSnapshot.data().wishlist;
+      } else {
+        // If the wishlist exists, check if the item is already in the list
+        const existingWishlist = snapShot.data().wishlist || [];
+        const itemExists = existingWishlist.find(
+          (wish) => wish.id === wishlistObj.id
+        );
+
+        if (itemExists) {
+          // If the item already exists, return the wishlist as is
+          return existingWishlist;
+        } else {
+          // Otherwise, update the wishlist with the new item
+          const updatedWishlist = [...existingWishlist, wishlistObj];
+          await updateDoc(wishlistRef, {
+            wishlist: updatedWishlist,
+          });
+          const updatedSnapshot = await getDoc(wishlistRef);
+          return updatedSnapshot.data().wishlist;
+        }
+      }
     } catch (error) {
-      console.log("error creating cartProduct", error.message);
+      console.error("Error managing wishlist:", error.message);
       return [];
     }
   } else {
-    if (snapShot.data().wishlist.find((wish) => wish.id == wishlistObj.id)) {
-      const updatedSnapshot = await wishlistRef.get();
-      return updatedSnapshot.data().wishlist;
-    } else {
-      await wishlistRef.update({
-        wishlist: [...snapShot.data().wishlist, wishlistObj],
-      });
-      const updatedSnapshot = await wishlistRef.get();
-      return updatedSnapshot.data().wishlist;
-    }
+    return [];
   }
 };
+
 export const addToWishlist2 = (wishlistObj) => {
   let wishlist = {
     id: wishlistObj.id,
@@ -1781,43 +1793,71 @@ export const updateSingleProduct = async (product) => {
 };
 
 export const addToCart = async (cartObj, user) => {
-  if (!user.uid) {
-    return [];
-  }
+  if (user && user.uid) {
+    const cartRef = doc(firestore, `carts/${user.uid}`);
+    const snapShot = await getDoc(cartRef);
 
-  const cartRef = doc(firestore, `carts/${user.uid}`);
-  const snapShot = await getDoc(cartRef);
+    if (!snapShot.exists()) {
+      try {
+        await setDoc(cartRef, {
+          cart: [cartObj],
+        });
+        const updatedSnapshot = await getDoc(cartRef);
+        return updatedSnapshot.data().cart;
+      } catch (error) {
+        console.log("Error creating cartProduct:", error.message);
+        return [];
+      }
+    } else {
+      const currentCart = snapShot.data().cart;
 
-  if (!snapShot.exists()) {
-    try {
-      await setDoc(cartRef, {
-        cart: [cartObj],
-      });
-      const updatedSnapshot = await getDoc(cartRef);
-      return updatedSnapshot.data().cart;
-    } catch (error) {
-      console.log("Error creating cartProduct:", error.message);
-      return [];
-    }
-  } else {
-    const currentCart = snapShot.data().cart;
-
-    if (cartObj.selectedVariation) {
-      const productIndex = currentCart.findIndex(
-        (cart) => cart.productId === cartObj.productId
-      );
-
-      if (productIndex !== -1) {
-        const variationIndex = currentCart.findIndex(
-          (cart) =>
-            cart.selectedVariation &&
-            cart.selectedVariation.id === cartObj.selectedVariation.id
+      if (cartObj.selectedVariation) {
+        const productIndex = currentCart.findIndex(
+          (cart) => cart.productId === cartObj.productId
         );
 
-        if (variationIndex !== -1) {
+        if (productIndex !== -1) {
+          const variationIndex = currentCart.findIndex(
+            (cart) =>
+              cart.selectedVariation &&
+              cart.selectedVariation.id === cartObj.selectedVariation.id
+          );
+
+          if (variationIndex !== -1) {
+            await updateDoc(cartRef, {
+              cart: currentCart.map((cart) => {
+                if (
+                  cart.selectedVariation.id === cartObj.selectedVariation.id
+                ) {
+                  return {
+                    ...cart,
+                    quantity:
+                      parseInt(cart.quantity) + parseInt(cartObj.quantity),
+                  };
+                } else {
+                  return cart;
+                }
+              }),
+            });
+          } else {
+            await updateDoc(cartRef, {
+              cart: [...currentCart, cartObj],
+            });
+          }
+        } else {
+          await updateDoc(cartRef, {
+            cart: [...currentCart, cartObj],
+          });
+        }
+      } else {
+        const productIndex = currentCart.findIndex(
+          (cart) => cart.productId === cartObj.productId
+        );
+
+        if (productIndex !== -1) {
           await updateDoc(cartRef, {
             cart: currentCart.map((cart) => {
-              if (cart.selectedVariation.id === cartObj.selectedVariation.id) {
+              if (cart.productId === cartObj.productId) {
                 return {
                   ...cart,
                   quantity:
@@ -1833,38 +1873,13 @@ export const addToCart = async (cartObj, user) => {
             cart: [...currentCart, cartObj],
           });
         }
-      } else {
-        await updateDoc(cartRef, {
-          cart: [...currentCart, cartObj],
-        });
       }
-    } else {
-      const productIndex = currentCart.findIndex(
-        (cart) => cart.productId === cartObj.productId
-      );
 
-      if (productIndex !== -1) {
-        await updateDoc(cartRef, {
-          cart: currentCart.map((cart) => {
-            if (cart.productId === cartObj.productId) {
-              return {
-                ...cart,
-                quantity: parseInt(cart.quantity) + parseInt(cartObj.quantity),
-              };
-            } else {
-              return cart;
-            }
-          }),
-        });
-      } else {
-        await updateDoc(cartRef, {
-          cart: [...currentCart, cartObj],
-        });
-      }
+      const updatedSnapshot = await getDoc(cartRef);
+      return updatedSnapshot.data().cart;
     }
-
-    const updatedSnapshot = await getDoc(cartRef);
-    return updatedSnapshot.data().cart;
+  } else {
+    return [];
   }
 };
 

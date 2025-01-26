@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useTransition } from "react";
 import "../public/scss/main.scss";
 import "../public/icons/icofont/icofont.min.css";
 import "photoswipe/dist/photoswipe.css";
@@ -25,7 +25,7 @@ import SearchModal from "@/components/modals/SearchModal";
 import ToolbarBottom from "@/components/modals/ToolbarBottom";
 import ToolbarShop from "@/components/modals/ToolbarShop";
 import UserProfile from "@/components/modals/UserProfile";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import NewsletterModal from "@/components/modals/NewsletterModal";
 import ShareModal from "@/components/modals/ShareModal";
 import ScrollTop from "@/components/common/ScrollTop";
@@ -43,6 +43,7 @@ import {
 import { onAuthStateChanged } from "firebase/auth";
 import { useSelector } from "react-redux";
 import AppNavigator from "./appNavigator";
+
 const RootLayout = ({ children }) => {
   const pathname = usePathname();
 
@@ -181,7 +182,7 @@ const RootLayout = ({ children }) => {
       <body className="preload-wrapper">
         <div className="preload preload-container" id="preloader">
           <div className="preload-logo">
-            <div className="spinner"></div>
+            {/* <div className="spinner"></div> */}
           </div>
         </div>{" "}
         <Provider store={store}>

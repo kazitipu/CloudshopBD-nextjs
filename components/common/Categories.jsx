@@ -63,7 +63,7 @@ const Accordion = ({ faqs = faqs1, getAllCategoriesRedux, categories }) => {
         className="grid-container"
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", // Adjust 120px to your desired size
+          gridTemplateColumns: "repeat(auto-fill, minmax(80px, 1fr))", // Adjust 120px to your desired size
           gap: "20px",
         }}
       >
@@ -73,10 +73,10 @@ const Accordion = ({ faqs = faqs1, getAllCategoriesRedux, categories }) => {
             <div className="grid-item" key={index}>
               <div
                 style={{
-                  minHeight: 120,
-                  minWidth: 120,
-                  maxHeight: 120,
-                  maxWidth: 120,
+                  minHeight: 80,
+                  minWidth: 80,
+                  maxHeight: 80,
+                  maxWidth: 80,
                   border: "3px solid rgb(184, 155, 0)",
                   backgroundImage: `url(${category.logo})`,
                   backgroundSize: "contain",

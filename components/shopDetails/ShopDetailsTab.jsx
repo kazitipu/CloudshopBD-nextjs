@@ -295,7 +295,7 @@ const ShopDetailsTab = ({ product, currentUser, updateSingleProductRedux }) => {
                           name="message"
                           rows={4}
                           value={review}
-                          placeholder=""
+                          placeholder="Enter your text here (optional)"
                           className=""
                           tabIndex={2}
                           aria-required="true"
@@ -303,7 +303,6 @@ const ShopDetailsTab = ({ product, currentUser, updateSingleProductRedux }) => {
                             setReview(e.target.value);
                           }}
                           required
-                          defaultValue={"Enter your text here (optional)"}
                           style={{ borderRadius: 5, marginTop: 10 }}
                         />
                         <div

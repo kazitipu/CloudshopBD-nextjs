@@ -132,7 +132,7 @@ const ProductCard = ({
               </div>
               <div style={{ fontWeight: "bold" }}>
                 <i
-                  class="icofont-trash"
+                  className="icofont-trash"
                   style={{
                     float: "right",
                     marginTop: 3,

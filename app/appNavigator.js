@@ -32,7 +32,12 @@ import ScrollTop from "@/components/common/ScrollTop";
 import RtlToggle from "@/components/common/RtlToggle";
 import store from "@/store";
 import { Provider } from "react-redux";
-import { auth, createUserProfileDocument } from "@/firebase/firebase.utils";
+import {
+  addToCart,
+  addToWishlist,
+  auth,
+  createUserProfileDocument,
+} from "@/firebase/firebase.utils";
 import {
   setGuestRedux,
   setCurrentUserRedux,
@@ -41,7 +46,12 @@ import {
   setAdditionalDataRedux,
 } from "@/actions";
 import { onAuthStateChanged } from "firebase/auth";
-import { getFirestore, doc, onSnapshot } from "firebase/firestore";
+import {
+  getFirestore,
+  doc,
+  onSnapshot,
+  snapshotEqual,
+} from "firebase/firestore";
 import { connect } from "react-redux";
 
 const db = getFirestore();
@@ -54,6 +64,7 @@ const AppNavigator = ({
   setReduxWishlist,
   setCurrentUserRedux,
   setAdditionalDataRedux,
+  currentUser,
 }) => {
   const additionalData2 = useRef(additionalData);
   useEffect(() => {
@@ -80,23 +91,48 @@ const AppNavigator = ({
       );
 
       if (userRef) {
-        onSnapshot(userRef, (snapShot) => {
-          setCurrentUserRedux({
+        let userObj = null;
+        onSnapshot(userRef, async (snapShot) => {
+          userObj = { id: snapShot.id, ...snapShot.data() };
+          console.log(userObj);
+          await setCurrentUserRedux({
             id: snapShot.id,
             ...snapShot.data(),
           });
+          //   here get the cartData for guest and merge it to logged in user then get the cart below
+          let cartData = JSON.parse(localStorage.getItem("cart")) || [];
+          if (cartData.length > 0 && userObj) {
+            for (let i = 0; i < cartData.length; i++) {
+              const cartObj = cartData[i];
+              await addToCart(cartObj, userObj);
+              console.log("user");
+            }
+          }
+          let wishlistData = JSON.parse(localStorage.getItem("wishlist")) || [];
+          if (wishlistData.length > 0 && userObj) {
+            for (let i = 0; i < wishlistData.length; i++) {
+              const wishlistObj = wishlistData[i];
+              await addToWishlist(wishlistObj, userObj);
+              console.log("user");
+            }
+          }
           setAdditionalDataRedux({});
         });
+
         const cartRef = doc(db, `carts/${user.uid}`);
         onSnapshot(cartRef, (snapShot) => {
           if (snapShot.exists()) {
-            setCartRedux(snapShot.data().cart);
+            console.log("cart");
+            setCartRedux([...snapShot.data().cart]);
           }
         });
         const wishlistRef = doc(db, `wishlists/${user.uid}`);
         onSnapshot(wishlistRef, (snapShot) => {
+          console.log("wishlist");
           if (snapShot.exists()) {
+            console.log("wishlist");
             setReduxWishlist(snapShot.data().wishlist);
+          } else {
           }
         });
       } else {
@@ -151,6 +187,7 @@ const AppNavigator = ({
 const mapStateToProps = (state) => {
   return {
     additionalData: state.users.additionalData,
+    currentUser: state.users.currentUser,
   };
 };
 export default connect(mapStateToProps, {

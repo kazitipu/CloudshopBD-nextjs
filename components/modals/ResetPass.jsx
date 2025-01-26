@@ -1,7 +1,51 @@
 "use client";
 import React from "react";
+import { connect } from "react-redux";
+import { ClipLoader } from "react-spinners";
+import { auth } from "@/firebase/firebase.utils";
+import { sendPasswordResetEmail } from "firebase/auth";
+import toast from "react-hot-toast";
+const ResetPass = () => {
+  const [formData, setData] = React.useState({ email: "" });
+  const [loader, setLoader] = React.useState(false);
 
-export default function ResetPass() {
+  const handleSubmit = async () => {
+    const emailAddress = formData.email;
+
+    console.log(emailAddress);
+
+    try {
+      // Trigger password reset email
+      await sendPasswordResetEmail(auth, emailAddress);
+
+      // Reset form data and navigate to the login screen
+      setData({
+        ...formData,
+        email: "",
+      });
+
+      toast.success(
+        "Password reset email has been sent to your email address. Please check your email."
+      );
+      window.document.getElementById("close-btn2").click();
+    } catch (error) {
+      // Reset form data and handle the error
+
+      console.error("Error sending password reset email:", error);
+
+      // Display a user-friendly error message
+      if (error.code === "auth/invalid-email") {
+        toast.error(
+          "The email address is invalid. Please provide a valid email."
+        );
+      } else if (error.code === "auth/user-not-found") {
+        toast.error("No user found with this email address.");
+      } else {
+        toast.error("An error occurred. Please try again later.");
+      }
+    }
+  };
+
   return (
     <div
       className="modal modalCentered fade form-sign-in modal-part-content"
@@ -14,15 +58,23 @@ export default function ResetPass() {
             <span
               className="icon-close icon-close-popup"
               data-bs-dismiss="modal"
+              id="close-btn2"
             />
           </div>
           <div className="tf-login-form">
-            <form onSubmit={(e) => e.preventDefault()} className="">
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setLoader(true);
+                await handleSubmit();
+                setLoader(false);
+              }}
+              className=""
+            >
               <div>
                 <p>
-                  Sign up for early Sale access plus tailored new arrivals,
-                  trends and promotions. To opt out, click unsubscribe in our
-                  emails
+                  We'll send an email to the email address you enter below. your
+                  registered gmail address
                 </p>
               </div>
               <div className="tf-field style-1">
@@ -33,6 +85,13 @@ export default function ResetPass() {
                   autoComplete="abc@xyz.com"
                   required
                   name=""
+                  value={formData.email}
+                  onChange={(e) => {
+                    setData({
+                      ...formData,
+                      email: e.target.value,
+                    });
+                  }}
                 />
                 <label className="tf-field-label" htmlFor="">
                   Email *
@@ -53,7 +112,11 @@ export default function ResetPass() {
                     type="submit"
                     className="tf-btn btn-fill animate-hover-btn radius-3 w-100 justify-content-center"
                   >
-                    <span>Reset password</span>
+                    {loader ? (
+                      <ClipLoader size={19} color="white" />
+                    ) : (
+                      <span>Reset password</span>
+                    )}
                   </button>
                 </div>
               </div>
@@ -63,4 +126,9 @@ export default function ResetPass() {
       </div>
     </div>
   );
-}
+};
+
+const mapStateToProps = (state) => {
+  return {};
+};
+export default connect(mapStateToProps, {})(ResetPass);

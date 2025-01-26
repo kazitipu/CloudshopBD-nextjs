@@ -545,7 +545,7 @@ const Details16 = ({
                   {product.savedAttributes.length > 0 && (
                     <div className="tf-product-info-variant-picker">
                       {product.savedAttributes.map((attribute, index) => (
-                        <div className="variant-picker-item">
+                        <div className="variant-picker-item" key={index}>
                           <div className="d-flex justify-content-between align-items-center">
                             <div className="variant-picker-label">
                               Choose {attribute.name}:{" "}
@@ -566,6 +566,8 @@ const Details16 = ({
                                   checked={
                                     state["selectedTerm" + index] &&
                                     state["selectedTerm" + index].id == term.id
+                                      ? true
+                                      : false
                                   }
                                 />
                                 <label

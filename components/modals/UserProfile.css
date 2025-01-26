@@ -1,0 +1,13 @@
+.each-profile-option {
+  color: #555;
+  font-size: 15px;
+  padding: 10px;
+  border-bottom: 1px solid gainsboro;
+  margin-top: 0px;
+  cursor: pointer;
+}
+
+.each-profile-option:hover {
+  background: rgb(255, 246, 246);
+  color: #ec345b;
+}

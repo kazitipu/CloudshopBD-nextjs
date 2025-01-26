@@ -418,6 +418,7 @@ export default function Header2({
                 display: "flex",
                 flexDirection: "row",
                 justifyContent: "space-between",
+                border: "1px solid gainsboro",
               }}
             >
               <ReactTyped
@@ -430,7 +431,7 @@ export default function Header2({
                 backSpeed={50}
                 attr="placeholder"
                 loop
-                style={{ minWidth: "80%" }}
+                style={{ minWidth: "60%" }}
               >
                 <input
                   id="query search-autocomplete"
@@ -440,7 +441,7 @@ export default function Header2({
                   name="searchBarValue"
                   className="nav-search nav-search-field"
                   aria-expanded="true"
-                  style={{ color: "black", fontSize: 14 }}
+                  style={{ color: "black", fontSize: 14, border: 0 }}
                 />
               </ReactTyped>
               <div
