@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import {
   setTotalRedux,
@@ -7,7 +7,10 @@ import {
   addToOrderRedux,
   getSingleOrderRedux,
 } from "@/actions";
-import Image from "next/image";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import { ClipLoader } from "react-spinners";
+
 const Invoice = ({
   orderId,
   orders,
@@ -17,6 +20,7 @@ const Invoice = ({
   currentUser,
   guest,
 }) => {
+  const [loader, setLoader] = useState(false);
   useEffect(() => {
     const getOrder = async () => {
       if (orders && orders.length == 0) {
@@ -66,6 +70,60 @@ const Invoice = ({
       }
     }
   };
+  // download pdf te image ashe na cors policy er karone request http://localhost theke jay ejonno.https:// request hole maybe thik hobe otherwise cors policy change korte hobe in firebase othobar node js server theke image fetch kore oi image use korte hobe in img src
+  const downloadPDF = async () => {
+    setLoader(true);
+    const invoiceElement = document.getElementById("invoice");
+    const images = invoiceElement.querySelectorAll("img");
+    const promises = Array.from(images).map((img) => {
+      return new Promise((resolve) => {
+        if (img.complete) {
+          resolve(); // Image is already loaded
+        } else {
+          img.onload = resolve;
+        }
+      });
+    });
+    await Promise.all(promises);
+    const canvas = await html2canvas(invoiceElement);
+    const imgData = canvas.toDataURL("image/jpg");
+
+    const pdf = new jsPDF("p", "mm", "a4");
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+    pdf.save("invoice.pdf");
+    setLoader(false);
+  };
+
+  //   const downloadPDF = () => {
+  //     setLoader(true);
+
+  //     const invoiceElement = document.getElementById("invoice");
+
+  //     // Wait for all images to load
+  //     const images = invoiceElement.querySelectorAll("img");
+  //     const promises = Array.from(images).map((img) => {
+  //       return new Promise((resolve) => {
+  //         if (img.complete) {
+  //           resolve(); // Image is already loaded
+  //         } else {
+  //           img.onload = resolve;
+  //         }
+  //       });
+  //     });
+
+  //     // Wait for all images to load
+  //     Promise.all(promises).then(() => {
+  //       html2pdf()
+  //         .from(invoiceElement)
+  //         .save("invoice.pdf")
+  //         .then(() => {
+  //           setLoader(false);
+  //         });
+  //     });
+  //   };
 
   let order = null;
   if (orders.length > 0) {
@@ -82,12 +140,29 @@ const Invoice = ({
       <section className="invoice-section">
         <div className="cus-container2">
           <div className="top">
-            <a href="#" className="tf-btn btn-fill animate-hover-btn">
-              Print this invoice
-            </a>
+            <div
+              className="tf-btn btn-fill animate-hover-btn"
+              onClick={downloadPDF}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center", // Horizontally centers the content
+                  alignItems: "center", // Vertically centers the content
+                  minWidth: 170,
+                  height: "100%", // Optional: Ensures the spinner is vertically centered if the parent div has a fixed height
+                }}
+              >
+                {loader ? (
+                  <ClipLoader loading={loader} size={19} color="white" />
+                ) : (
+                  "Download Invoice"
+                )}
+              </div>
+            </div>
           </div>
           {order && (
-            <div className="box-invoice">
+            <div className="box-invoice" id="invoice">
               <div className="header" style={{ paddingTop: 100 }}>
                 <div className="wrap-top" style={{ marginBottom: 40 }}>
                   <div className="box-left">
@@ -140,7 +215,9 @@ const Invoice = ({
                 <div className="wrap-info">
                   {order.currentUser ? (
                     <div className="box-left">
-                      <div className="title">Delivery Address</div>
+                      <div className="title" style={{ marginBottom: 0 }}>
+                        Delivery Address
+                      </div>
                       <div className="sub">
                         {" "}
                         {
@@ -177,7 +254,9 @@ const Invoice = ({
                     </div>
                   ) : (
                     <div className="box-left">
-                      <div className="title">Delivery Address</div>
+                      <div className="title" style={{ marginBottom: 0 }}>
+                        Delivery Address
+                      </div>
                       <div className="sub">
                         {
                           order.guest.address.find(

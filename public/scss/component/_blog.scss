@@ -385,11 +385,13 @@ blockquote {
 }
 
 .tf-page-title {
-  padding: 69px 0 65px;
-  background-image: url(/images/shop/file/page-title-blog.png);
+  padding: 25px 0px;
+
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
+  background-color: rgb(255, 172, 186);
+  color: white;
   .heading {
     font-size: 42px;
     font-weight: 400;

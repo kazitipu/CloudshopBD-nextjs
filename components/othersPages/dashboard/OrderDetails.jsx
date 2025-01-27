@@ -11,6 +11,7 @@ import {
 } from "@/actions";
 import { ClipLoader } from "react-spinners";
 import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 const OrderDetails = ({
   orderId,
   orders,
@@ -20,6 +21,7 @@ const OrderDetails = ({
 }) => {
   const [seletedTab, setSelectedTab] = useState("Order Tracking");
   const [loader, setLoader] = useState(false);
+  const router = useRouter();
   const [state, setState] = useState({
     loading: true,
     cartArr: [],
@@ -149,7 +151,19 @@ const OrderDetails = ({
                 }}
               >
                 {order.orderStatus}
-              </div>
+              </div>{" "}
+              <a
+                className="badge"
+                style={{
+                  color: "white",
+                  backgroundColor: "black",
+                  cursor: "pointer",
+                }}
+                href={`/invoice?orderId=${order.id}`}
+                target="_blank"
+              >
+                see invoice
+              </a>
               <h6 className="mt-8 fw-5">Order #{order.id}</h6>
             </div>
           </div>
