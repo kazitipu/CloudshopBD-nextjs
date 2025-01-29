@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { openCartModal } from "@/utlis/openCartModal";
 import {
@@ -20,7 +20,13 @@ import {
   addToCartRedux2,
   addToWishlistRedux,
   removeFromWishlistRedux,
+  getAllScr,
+  getAllScreenShotRedux,
 } from "@/actions";
+import { products1 } from "@/data/products";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { ProductCard } from "../shopCards/ProductCard";
+import { Navigation, Pagination } from "swiper/modules";
 
 const Details16 = ({
   product,
@@ -31,10 +37,14 @@ const Details16 = ({
   addToWishlistRedux,
   removeFromWishlistRedux,
   wishlist,
+  getAllScreenShotRedux,
+  screenshots,
 }) => {
   const router = useRouter();
   const [quantity, setQuantity] = useState(1);
+  const [width, setWidth] = useState(0);
   const [loader, setLoader] = useState(false);
+  const divRef = useRef(null);
 
   const [state, setState] = useState({
     productCount: 1,
@@ -49,6 +59,25 @@ const Details16 = ({
     getPicture: false,
     render: false,
   });
+
+  useEffect(() => {
+    const getScreenShot = async () => {
+      getAllScreenShotRedux();
+    };
+    getScreenShot();
+  }, []);
+  useEffect(() => {
+    if (divRef.current) {
+      // Access the width of the div
+      setWidth(divRef.current.offsetWidth);
+
+      // Optional: Add a resize listener for responsive layouts
+      const handleResize = () => setWidth(divRef.current.offsetWidth);
+      window.addEventListener("resize", handleResize);
+
+      return () => window.removeEventListener("resize", handleResize);
+    }
+  }, []);
 
   useEffect(() => {
     let obj = {};
@@ -749,6 +778,86 @@ const Details16 = ({
                       </div>
                     </div>
                   </div>
+                  {screenshots.length > 0 && (
+                    <div className="tf-product-info-delivery-return">
+                      <div
+                        style={{
+                          fontWeight: "bold",
+                          fontWeight: "bold",
+                          fontSize: 18,
+                          marginBottom: 10,
+                        }}
+                      >
+                        কাস্টমার রিভিউ 😊
+                      </div>
+                      <div className="row">
+                        <div className="hover-sw-nav hover-sw-2">
+                          <Swiper
+                            dir="ltr"
+                            className="swiper tf-sw-product-sell wrap-sw-over"
+                            slidesPerView={4} // Equivalent to data-preview={4}
+                            spaceBetween={30} // Equivalent to data-space-lg={30}
+                            breakpoints={{
+                              1024: {
+                                slidesPerView: 4, // Equivalent to data-tablet={3}
+                              },
+                              640: {
+                                slidesPerView: 3, // Equivalent to data-tablet={3}
+                              },
+                              0: {
+                                slidesPerView: 2, // Equivalent to data-mobile={2}
+                                spaceBetween: 15, // Equivalent to data-space-md={15}
+                              },
+                            }}
+                            modules={[Navigation, Pagination]}
+                            navigation={{
+                              prevEl: ".snbp308",
+                              nextEl: ".snbn308",
+                            }}
+                            pagination={{ clickable: true, el: ".spd308" }}
+                          >
+                            {screenshots.map((screenshot, i) => (
+                              <SwiperSlide key={i} className="swiper-slide">
+                                <div
+                                  className="card-product style-skincare"
+                                  style={{
+                                    position: "relative",
+                                    border: "1px solid gainsboro",
+                                  }}
+                                >
+                                  <div className="card-product-wrapper">
+                                    <img
+                                      className="product-img"
+                                      ref={divRef}
+                                      src={screenshot.imageUrl}
+                                      style={{
+                                        maxHeight: 300,
+                                        minHeight: 300,
+                                        cursor: "pointer",
+                                      }}
+                                      onClick={() => {
+                                        window.open(
+                                          screenshot.imageUrl,
+                                          "_blank"
+                                        );
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+                              </SwiperSlide>
+                            ))}
+                          </Swiper>
+                          <div className="nav-sw nav-next-slider nav-next-recent box-icon w_46 round snbp308">
+                            <span className="icon icon-arrow-left" />
+                          </div>
+                          <div className="nav-sw nav-prev-slider nav-prev-recent box-icon w_46 round snbn308">
+                            <span className="icon icon-arrow-right" />
+                          </div>
+                          <div className="sw-dots style-2 sw-pagination-recent justify-content-center spd308" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -765,6 +874,7 @@ const mapStateToProps = (state) => {
     freeShipping: state.cart.freeShipping,
     currentUser: state.users.currentUser,
     wishlist: state.wishlist.wishlist,
+    screenshots: state.products.screenshots,
   };
 };
 export default connect(mapStateToProps, {
@@ -772,4 +882,5 @@ export default connect(mapStateToProps, {
   addToCartRedux2,
   addToWishlistRedux,
   removeFromWishlistRedux,
+  getAllScreenShotRedux,
 })(Details16);

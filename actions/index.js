@@ -72,6 +72,7 @@ import {
   deleteAddress,
   updateUser,
   getSingleAnnouncement,
+  getAllScreenShot,
 } from "../firebase/firebase.utils";
 
 export const setAllOrders = (ordersArray) => ({
@@ -184,6 +185,15 @@ export const updateShipmentRequestRedux = (requestObj) => async (dispatch) => {
   const updatedRequest = await updateShipmentRequest(requestObj);
   dispatch({ type: "UPDATE_SHIPMENT_REQUEST", payload: updatedRequest });
 };
+
+export const getAllScreenShotRedux = () => async (dispatch) => {
+  const allBrands = await getAllScreenShot();
+  dispatch({
+    type: "GET_ALL_SCREENSHOT",
+    payload: allBrands,
+  });
+};
+
 export const setFreeShippingRedux = (value) => async (dispatch) => {
   dispatch({
     type: "SET_FREE_SHIPPING",

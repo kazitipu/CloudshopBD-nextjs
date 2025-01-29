@@ -332,6 +332,7 @@ const Invoice = ({
                                 borderRadius: 5,
                                 height: 80,
                                 width: 80,
+                                border: "1px solid gainsboro",
                               }}
                             />
                             <div style={{ marginLeft: 10 }}>
@@ -507,7 +508,7 @@ const Invoice = ({
                         <tr className="content">
                           <td
                             className="total"
-                            tyle={{
+                            style={{
                               paddingTop: 5,
                               paddingBottom: 5,
                               borderBottom: "1px solid gainsboro",

@@ -655,6 +655,19 @@ export const getSingleOrder = async (id) => {
     throw new Error("Failed to fetch order");
   }
 };
+
+export const getAllScreenShot = async () => {
+  const cnfsCollectionRef = collection(firestore, "screenshots"); // Reference to the collection
+
+  try {
+    const querySnapshot = await getDocs(cnfsCollectionRef); // Get all documents in the collection
+    const cnfsArray = querySnapshot.docs.map((doc) => doc.data()); // Map the data into an array
+    return cnfsArray;
+  } catch (error) {
+    alert(error.message); // Use error.message for better readability
+  }
+};
+
 export const getSingleAnnouncement = async () => {
   const today = new Date();
   const todayFormatted = today.toISOString().split("T")[0];
