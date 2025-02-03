@@ -6,8 +6,9 @@ import React, { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Navigation } from "swiper/modules";
-
+import { ClipLoader } from "react-spinners";
 const Categories = ({ topCategories }) => {
+  console.log(topCategories);
   return (
     <section
       className="flat-spacing-12"
@@ -52,7 +53,7 @@ const Categories = ({ topCategories }) => {
               nextEl: ".snbn130",
             }}
           >
-            {topCategories &&
+            {topCategories.length > 0 ? (
               topCategories.map((item, index) => (
                 <SwiperSlide key={index}>
                   <div className="collection-item-circle hover-img">
@@ -84,7 +85,20 @@ const Categories = ({ topCategories }) => {
                     </div>
                   </div>
                 </SwiperSlide>
-              ))}
+              ))
+            ) : (
+              <div
+                className="collection-item-circle hover-img"
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  justifyContent: "center",
+                  padding: 50,
+                }}
+              >
+                <ClipLoader loading={true} color={"#ec345b"} size={25} />
+              </div>
+            )}
           </Swiper>
           <div className="sw-dots style-2 sw-pagination-collection justify-content-center" />
           <div className="nav-sw nav-next-slider nav-next-collection snbp130">

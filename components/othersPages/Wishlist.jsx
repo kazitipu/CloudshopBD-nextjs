@@ -11,11 +11,10 @@ const Wishlist = ({ wishlist }) => {
     <section className="flat-spacing-2">
       <div className="container">
         <div className="grid-layout wrapper-shop" data-grid="grid-4">
-          {wishlist.map((elm, i) => (
-            <ProductCard key={i} product={elm} />
-          ))}
+          {wishlist &&
+            wishlist.map((elm, i) => <ProductCard key={i} product={elm} />)}
         </div>
-        {wishlist.length == 0 && (
+        {(!wishlist || wishlist.length == 0) && (
           <>
             <div
               className="row align-items-center w-100"
@@ -23,14 +22,6 @@ const Wishlist = ({ wishlist }) => {
             >
               <div className="col-lg-3 col-md-6 fs-18">
                 Your wishlist is empty
-              </div>
-              <div className="col-lg-3  col-md-6">
-                <Link
-                  href={`/shop-default`}
-                  className="tf-btn btn-fill animate-hover-btn radius-3 w-100 justify-content-center"
-                >
-                  Explore Products!
-                </Link>
               </div>
             </div>
           </>

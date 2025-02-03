@@ -668,6 +668,33 @@ export const getAllScreenShot = async () => {
   }
 };
 
+export const getSimilarCategoryProducts = async (categories) => {
+  // Get the Firestore instance
+
+  try {
+    // Create a query to fetch products with the given categories
+    const productsCollectionRef = query(
+      collection(firestore, "products"),
+      where("checkedValues", "array-contains-any", categories),
+      orderBy("id", "desc"),
+      limit(20)
+    );
+
+    // Get the documents based on the query
+    const querySnapshot = await getDocs(productsCollectionRef);
+
+    const productsArray = [];
+    querySnapshot.forEach((doc) => {
+      productsArray.push(doc.data());
+    });
+
+    return productsArray;
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    return []; // Return an empty array in case of an error
+  }
+};
+
 export const getSingleAnnouncement = async () => {
   const today = new Date();
   const todayFormatted = today.toISOString().split("T")[0];

@@ -30,10 +30,12 @@ export default function Header2({
   const router = useRouter();
   useEffect(() => {
     console.log("searchbar value is getting changed outside");
+    console.log(algoliasearch);
     const getAlgoliaProducts = async () => {
       if (searchBarValue && searchBarValue.length >= 3) {
         console.log("searchbar value is getting changed inside");
         setLoader(true);
+
         const response = await searchClient.searchSingleIndex({
           indexName: "products",
           searchParams: { query: searchBarValue },

@@ -23,6 +23,7 @@ const Checkout = ({
   guest,
   addToOrderRedux,
   updateSingleProductRedux,
+  orderNote,
 }) => {
   const [number, onChangeNumber] = React.useState("");
   const [loader, setLoader] = useState(false);
@@ -504,6 +505,14 @@ const Checkout = ({
                     Apply
                   </div>
                 </div>
+                {orderNote && (
+                  <div
+                    className="d-flex"
+                    style={{ fontWeight: "bold", fontSize: 13 }}
+                  >
+                    Order Note: {orderNote}
+                  </div>
+                )}
                 <div
                   className="d-flex"
                   style={{ color: "#ff8084", fontWeight: "bold", fontSize: 15 }}
@@ -674,6 +683,8 @@ const Checkout = ({
                     setLoader(true);
                     console.log(guest);
                     console.log(currentUser);
+                    // empty order note in local storage
+                    localStorage.removeItem("orderNote");
                     let orderObj = {
                       id:
                         new Date().getTime().toString() +
@@ -708,6 +719,7 @@ const Checkout = ({
                       date: new Date().getTime().toString(),
                       orderStatusScore: 1,
                       userId: currentUser ? currentUser.uid : guest.id,
+                      orderNote: orderNote,
                     };
                     console.log(orderObj);
                     await addToOrderRedux(orderObj);
@@ -748,6 +760,7 @@ const mapStateToProps = (state) => {
     freeShipping: state.cart.freeShipping,
     total: state.cart.total,
     guest: state.users.guest,
+    orderNote: state.cart.orderNote,
   };
 };
 export default connect(mapStateToProps, {

@@ -44,6 +44,7 @@ import {
   setCartRedux,
   setReduxWishlist,
   setAdditionalDataRedux,
+  setOrderNoteRedux,
 } from "@/actions";
 import { onAuthStateChanged } from "firebase/auth";
 import {
@@ -61,6 +62,7 @@ const AppNavigator = ({
   additionalData,
   setGuestRedux,
   setCartRedux,
+  setOrderNoteRedux,
   setReduxWishlist,
   setCurrentUserRedux,
   setAdditionalDataRedux,
@@ -140,9 +142,11 @@ const AppNavigator = ({
         setGuestRedux();
         // get cart from local storage
         let cartData = JSON.parse(localStorage.getItem("cart")) || [];
-        let wishlistData = JSON.parse(localStorage.getItem("wishlist"));
+        let wishlistData = JSON.parse(localStorage.getItem("wishlist")) || [];
+        let orderNote = JSON.parse(localStorage.getItem("orderNote"));
         setCartRedux(cartData);
         setReduxWishlist(wishlistData);
+        setOrderNoteRedux(orderNote);
       }
     } else {
       // setCurrentUserRedux korar dorkar nai karon setGuestRedux e currentUser ke null kore dicche
@@ -150,8 +154,10 @@ const AppNavigator = ({
       // get cart from local storage
       let cartData = JSON.parse(localStorage.getItem("cart")) || [];
       let wishlistData = JSON.parse(localStorage.getItem("wishlist"));
+      let orderNote = JSON.parse(localStorage.getItem("orderNote"));
       setCartRedux(cartData);
       setReduxWishlist(wishlistData);
+      setOrderNoteRedux(orderNote);
     }
   };
 
@@ -192,6 +198,7 @@ const mapStateToProps = (state) => {
 };
 export default connect(mapStateToProps, {
   setCartRedux,
+  setOrderNoteRedux,
   setReduxWishlist,
   setCurrentUserRedux,
   setGuestRedux,

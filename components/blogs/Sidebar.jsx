@@ -388,7 +388,7 @@ const Sidebar = ({
         </div>
       </div>
 
-      <div className="sidebar-item sidebar-tags">
+      {/* <div className="sidebar-item sidebar-tags">
         <div className="sidebar-title">Recent search</div>
         <div className="sidebar-content">
           <ul className="tags-lists" style={{ flexWrap: "wrap" }}>
@@ -439,7 +439,7 @@ const Sidebar = ({
             </li>
           </ul>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

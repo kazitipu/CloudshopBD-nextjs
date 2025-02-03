@@ -12,6 +12,7 @@ import { connect } from "react-redux";
 import "./products.css";
 import { addToWishlistRedux, removeFromWishlistRedux } from "@/actions";
 import toast from "react-hot-toast";
+import { ClipLoader } from "react-spinners";
 const Products = ({
   homeCategories,
   homeProducts,
@@ -165,6 +166,7 @@ const Products = ({
 
   const renderProducts = (category) => {
     let renderableProducts = [];
+    console.log(homeProducts);
     if (homeProducts && homeProducts.length > 0) {
       let products = homeProducts.find(
         (product) => product.categoryId == category.id
@@ -194,7 +196,7 @@ const Products = ({
               }}
               pagination={{ clickable: true, el: `.spd265-${category.id}` }}
             >
-              {renderableProducts.length > 0 &&
+              {renderableProducts.length > 0 ? (
                 renderableProducts.map((product) => (
                   <SwiperSlide key={product.id}>
                     <div
@@ -330,7 +332,20 @@ const Products = ({
                       </div>
                     </div>
                   </SwiperSlide>
-                ))}
+                ))
+              ) : (
+                <div
+                  className="collection-item-circle hover-img"
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "center",
+                    padding: 50,
+                  }}
+                >
+                  <ClipLoader loading={true} color={"#ec345b"} size={25} />
+                </div>
+              )}
             </Swiper>
             <div
               className={`nav-sw style-not-line nav-next-slider nav-next-sell-1 box-icon w_46 round snbp265-${category.id}`}

@@ -20,38 +20,39 @@ export const metadata = {
 };
 export default async function page() {
   const categories = await getAllCategories();
-  const latestProducts = await getAllLatestProducts();
+  // const latestProducts = await getAllLatestProducts();
+  // chaile top selling chara onno kono category o use korte parbe
   let category = categories.find((cat) => cat.name === "Top selling");
   let bestSelling;
   if (category) {
     bestSelling = await getAllHomeScreenBestSelling(category.id);
   }
   const banners = await getAllBanners();
-  const topCategories = await getAllTopCategories();
-  const campaigns = await getAllCampaigns();
-  const homeCategories = await getAllHomeScreenCategories();
-  let homeProducts = [];
-  if (homeCategories && homeCategories.length > 0) {
-    homeProducts = await Promise.all(
-      homeCategories.map(async (category) => {
-        const products = await getAllHomeScreenProducts(category.id);
-        return { categoryId: category.id, products };
-      })
-    );
-  }
+  // const topCategories = await getAllTopCategories();
+
+  // const homeCategories = await getAllHomeScreenCategories();
+  // let homeProducts = [];
+  // if (homeCategories && homeCategories.length > 0) {
+  //   homeProducts = await Promise.all(
+  //     homeCategories.map(async (category) => {
+  //       const products = await getAllHomeScreenProducts(category.id);
+  //       return { categoryId: category.id, products };
+  //     })
+  //   );
+  // }
   return (
     <>
       <Header2 />
       <BlogLeftSidebar
         categories={categories}
-        latestProducts={latestProducts}
+        // latestProducts={latestProducts}
         bestSelling={bestSelling}
         bestSellingCategory={category}
         banners={banners}
-        topCategories={topCategories}
-        campaigns={campaigns}
-        homeCategories={homeCategories}
-        homeProducts={homeProducts}
+        // topCategories={topCategories}
+        // campaigns={campaigns}
+        // homeCategories={homeCategories}
+        // homeProducts={homeProducts}
       />
       <Footer1 />
     </>

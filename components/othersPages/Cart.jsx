@@ -3,6 +3,7 @@ import {
   decrementQuantityRedux,
   incrementQuantityRedux,
   removeFromCartRedux,
+  setOrderNoteRedux,
   setQuantityRedux,
 } from "@/actions";
 import { useContextElement } from "@/context/Context";
@@ -10,6 +11,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { connect } from "react-redux";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 const Cart = ({
   cartData,
   removeFromCartRedux,
@@ -17,6 +19,8 @@ const Cart = ({
   decrementQuantityRedux,
   setQuantityRedux,
   freeShipping,
+  orderNote2,
+  setOrderNoteRedux,
 }) => {
   const [state, setState] = useState({
     loading: true,
@@ -30,11 +34,17 @@ const Cart = ({
     dhakaDelivery: true,
   });
 
+  const router = useRouter();
+
   const [termsAndCondition, setTermsAndCondition] = useState(false);
+  const [orderNote, setOrderNote] = useState("");
 
   useEffect(() => {
     calculateCart();
   }, [cartData]);
+  useEffect(() => {
+    setOrderNote(orderNote2);
+  }, [orderNote2]);
 
   const calculateCart = () => {
     let cartProducts = cartData;
@@ -329,6 +339,10 @@ const Cart = ({
                   id="cart-note"
                   placeholder="How can we help you?"
                   defaultValue={""}
+                  onChange={(e) => {
+                    setOrderNote(e.target.value);
+                  }}
+                  value={orderNote}
                 />
               </div>
             </form>
@@ -396,17 +410,6 @@ const Cart = ({
                 )}
               </div>
               <div className="tf-page-cart-checkout">
-                {/* <div className="cart-checkbox">
-                  <input
-                    type="checkbox"
-                    className="tf-check"
-                    id="cart-gift-checkbox"
-                  />
-                  <label htmlFor="cart-gift-checkbox" className="fw-4">
-                    <span>Do you want a gift wrap?</span> Only
-                    <span className="fw-5">$5.00</span>
-                  </label>
-                </div> */}
                 <div className="tf-cart-totals-discounts">
                   <h3>Subtotal</h3>
                   <span className="total-value">৳ {state.sumAmount}</span>
@@ -428,12 +431,16 @@ const Cart = ({
                   </label>
                 </div>
                 <div className="cart-checkout-btn">
-                  <Link
+                  <div
                     href={`/checkout`}
                     className="tf-btn w-100 btn-fill animate-hover-btn radius-3 justify-content-center"
+                    onClick={() => {
+                      setOrderNoteRedux(orderNote);
+                      router.push(`/checkout`);
+                    }}
                   >
                     <span>Check out</span>
-                  </Link>
+                  </div>
                 </div>
               </div>
             </div>
@@ -448,6 +455,7 @@ const mapStateToProps = (state) => {
   return {
     cartData: state.cart.cartData,
     freeShipping: state.cart.freeShipping,
+    orderNote2: state.cart.orderNote,
   };
 };
 export default connect(mapStateToProps, {
@@ -455,4 +463,5 @@ export default connect(mapStateToProps, {
   incrementQuantityRedux,
   decrementQuantityRedux,
   setQuantityRedux,
+  setOrderNoteRedux,
 })(Cart);

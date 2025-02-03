@@ -4,6 +4,7 @@ const initialState = {
   freeShipping: 0,
   total: 0,
   coupon: null,
+  orderNote: "",
 };
 const cartReducer = (state = initialState, action) => {
   const { payload } = action;
@@ -18,6 +19,11 @@ const cartReducer = (state = initialState, action) => {
       return {
         ...state,
         cartData: payload,
+      };
+    case "SET_ORDER_NOTE":
+      return {
+        ...state,
+        orderNote: payload,
       };
     case "ADD_TO_ORDER":
       return {

@@ -73,6 +73,7 @@ import {
   updateUser,
   getSingleAnnouncement,
   getAllScreenShot,
+  getSimilarCategoryProducts,
 } from "../firebase/firebase.utils";
 
 export const setAllOrders = (ordersArray) => ({
@@ -390,6 +391,19 @@ export const setReduxWishlist = (wishlist) => async (dispatch) => {
     payload: wishlist,
   });
 };
+export const setOrderNoteRedux = (orderNote) => async (dispatch) => {
+  console.log(orderNote);
+  if (orderNote && orderNote != "") {
+    localStorage.removeItem("orderNote");
+    localStorage.setItem("orderNote", JSON.stringify(orderNote));
+  }
+  let orderNote2 = JSON.parse(localStorage.getItem("orderNote"));
+  console.log(orderNote2);
+  dispatch({
+    type: "SET_ORDER_NOTE",
+    payload: orderNote ? orderNote : orderNote2 ? orderNote2 : "",
+  });
+};
 
 // for guest cart
 export const addToCartRedux2 = (cartObj) => async (dispatch) => {
@@ -507,6 +521,14 @@ export const getAllCategoriesRedux = () => async (dispatch) => {
     payload: allCats,
   });
 };
+export const getSimilarCategoryProductsRedux =
+  (categories) => async (dispatch) => {
+    const allProducts = await getSimilarCategoryProducts(categories);
+    dispatch({
+      type: "GET_ALL_SIMILAR_CATEGORY_PRODUCTS",
+      payload: allProducts,
+    });
+  };
 export const getAllCampaignsRedux = () => async (dispatch) => {
   const allCamps = await getAllCampaigns();
   dispatch({

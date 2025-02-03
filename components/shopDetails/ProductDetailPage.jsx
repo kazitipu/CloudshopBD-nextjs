@@ -20,7 +20,7 @@ const page = ({ params, getSingleProductRedux, product }) => {
       getSingleProductRedux(params.id);
     }
   }, []);
-
+  console.log(product);
   return (
     <>
       {product && (
@@ -42,8 +42,8 @@ const page = ({ params, getSingleProductRedux, product }) => {
           </div>
           <Details16 product={product} />
           <ShopDetailsTab product={product} />
-          <Products />
-          <RecentProducts />
+          <Products item={product.selectedCategories[0]} />
+          {/* <RecentProducts />  */}
           <Footer1 />
         </>
       )}

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Sidebar from "./Sidebar";
 import Image from "next/image";
 import Link from "next/link";
@@ -17,9 +17,19 @@ import Banner from "@/components/homes/home-headphone/Banner";
 import Products2 from "@/components/homes/home-6/Products";
 import Collections2 from "@/components/homes/home-headphone/Collections2";
 import Announcmentbar from "../common/Announcmentbar";
-import { updateAlgoliaRecords } from "@/firebase/firebase.utils";
-
-export default function BlogLeftSidebar({
+import {
+  getAllHomeScreenProducts,
+  updateAlgoliaRecords,
+} from "@/firebase/firebase.utils";
+import {
+  getAllLatestProductsRedux,
+  getAllTopCategoriesRedux,
+  getAllCampaignsRedux,
+  getAllHomeScreenCategoriesRedux,
+  getAllHomeScreenProductsRedux,
+} from "@/actions";
+import { connect } from "react-redux";
+const BlogLeftSidebar = ({
   categories,
   latestProducts,
   bestSelling,
@@ -27,9 +37,40 @@ export default function BlogLeftSidebar({
   topCategories,
   campaigns,
   homeCategories,
-  homeProducts,
   bestSellingCategory,
-}) {
+  getAllLatestProductsRedux,
+  getAllTopCategoriesRedux,
+  getAllCampaignsRedux,
+  getAllHomeScreenCategoriesRedux,
+  getAllHomeScreenProductsRedux,
+}) => {
+  const [homeProducts, setHomeProducts] = useState([]);
+  useEffect(() => {
+    const fetchData = async () => {
+      await getAllTopCategoriesRedux();
+      await getAllCampaignsRedux();
+      await getAllHomeScreenCategoriesRedux();
+      await getAllLatestProductsRedux();
+    };
+    fetchData();
+  }, []);
+  useEffect(() => {
+    const fetchProducts = async () => {
+      if (homeCategories && homeCategories.length > 0) {
+        console.time("homeProducts");
+        let homeProducts = await Promise.all(
+          homeCategories.map(async (category) => {
+            const products = await getAllHomeScreenProducts(category.id);
+            return { categoryId: category.id, products };
+          })
+        );
+        console.timeEnd("homeProducts"); // End the timer and log the time taken
+        setHomeProducts(homeProducts);
+      }
+    };
+    fetchProducts();
+  }, [homeCategories]);
+  console.log(latestProducts);
   return (
     <div className="container">
       <Announcmentbar />
@@ -38,7 +79,7 @@ export default function BlogLeftSidebar({
           <div className="blog-sidebar-main" style={{ paddingTop: 10 }}>
             <Sidebar
               categories={categories}
-              latestProducts={latestProducts.productsArray}
+              latestProducts={latestProducts}
               bestSelling={bestSelling}
               bestSellingCategory={bestSellingCategory}
             />
@@ -73,7 +114,7 @@ export default function BlogLeftSidebar({
                 />
               </div>
 
-              <Products2 latestProducts={latestProducts.productsArray} />
+              <Products2 latestProducts={latestProducts} />
 
               <ul
                 className="wg-pagination"
@@ -95,4 +136,20 @@ export default function BlogLeftSidebar({
       </div>
     </div>
   );
-}
+};
+const mapStateToProps = (state) => {
+  return {
+    latestProducts: state.categories.latestProducts,
+    topCategories: state.categories.topCategories,
+    campaigns: state.categories.campaigns,
+    homeCategories: state.categories.homeCategories,
+    homeProducts: state.categories.homeProducts,
+  };
+};
+export default connect(mapStateToProps, {
+  getAllLatestProductsRedux,
+  getAllTopCategoriesRedux,
+  getAllCampaignsRedux,
+  getAllHomeScreenCategoriesRedux,
+  getAllHomeScreenProductsRedux,
+})(BlogLeftSidebar);

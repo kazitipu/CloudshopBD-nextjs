@@ -3,6 +3,7 @@ const INITIAL_STATE = {
   productObj: null,
   lastProduct: null,
   screenshots: [],
+  similarProducts: [],
 };
 
 const setProductsReducer = (state = INITIAL_STATE, action) => {
@@ -18,6 +19,11 @@ const setProductsReducer = (state = INITIAL_STATE, action) => {
 
     case "GET_SINGLE_PRODUCT":
       return { ...state, productObj: action.payload };
+    case "GET_ALL_SIMILAR_CATEGORY_PRODUCTS":
+      return {
+        ...state,
+        similarProducts: action.payload,
+      };
     case "GET_ALL_SCREENSHOT":
       return { ...state, screenshots: [...action.payload] };
     case "UPDATE_PRODUCT":

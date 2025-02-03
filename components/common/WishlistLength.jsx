@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import { useEffect, useState } from "react";
 
 const WishlistLength = ({ wishlist }) => {
-  return <div>{wishlist.length}</div>;
+  return <div>{wishlist && wishlist.length}</div>;
 };
 
 const mapStateToProps = (state) => {
