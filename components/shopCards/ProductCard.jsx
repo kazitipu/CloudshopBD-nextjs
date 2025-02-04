@@ -6,11 +6,25 @@ import { useContextElement } from "@/context/Context";
 import CountdownComponent from "../common/Countdown";
 import "./productCard.css";
 import { useRouter } from "next/navigation";
-export const ProductCard = ({ product, gridItems }) => {
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
+import { connect } from "react-redux";
+import toast from "react-hot-toast";
+import { addToWishlistRedux, removeFromWishlistRedux } from "@/actions";
+const ProductCard = ({
+  product,
+  gridItems,
+  addToWishlistRedux,
+  removeFromWishlistRedux,
+  wishlist,
+  currentUser,
+}) => {
   const router = useRouter();
   const divRef = useRef(null);
   const [width, setWidth] = useState(0);
-  const [currentImage, setCurrentImage] = useState(product.imgSrc);
+  const [currentImage, setCurrentImage] = useState(
+    product && product.imgSrc ? product.imgSrc : ""
+  );
 
   useEffect(() => {
     if (divRef.current) {
@@ -32,7 +46,7 @@ export const ProductCard = ({ product, gridItems }) => {
   }, [gridItems]);
 
   useEffect(() => {
-    setCurrentImage(product.imgSrc);
+    setCurrentImage(product && product.imgSrc ? product.imgSrc : "");
   }, [product]);
 
   const getPrice = (product) => {
@@ -166,7 +180,7 @@ export const ProductCard = ({ product, gridItems }) => {
 
   return (
     <>
-      {product && product.pictures && (
+      {product && product.pictures ? (
         <div
           className="card-product style-skincare"
           style={{
@@ -217,32 +231,41 @@ export const ProductCard = ({ product, gridItems }) => {
             </a>
             <div className="list-product-btn">
               <a
-                onClick={() => {}}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (
+                    wishlist &&
+                    wishlist.length > 0 &&
+                    wishlist.find((wish) => wish.id == product.id)
+                  ) {
+                    removeFromWishlistRedux(product, currentUser);
+                    toast.success("Item removed from wishlist");
+                  } else {
+                    addToWishlistRedux(product, currentUser);
+                    toast.success("Item added to Wishlist");
+                  }
+                }}
                 className="box-icon bg_white wishlist btn-icon-action"
               >
-                <span className={`icon icon-heart`} />
-                <span className="tooltip">Add to Wishlist</span>
+                <span
+                  className={`icon icon-heart`}
+                  style={{
+                    color:
+                      wishlist &&
+                      wishlist.length > 0 &&
+                      wishlist.find((wish) => wish.id == product.id)
+                        ? "red"
+                        : "",
+                  }}
+                />
+                <span className="tooltip">
+                  {wishlist &&
+                  wishlist.length > 0 &&
+                  wishlist.find((wish) => wish.id == product.id)
+                    ? "Added to Wishlist"
+                    : "Add to Wishlist"}
+                </span>
                 <span className="icon icon-delete" />
-              </a>
-              <a
-                href="#compare"
-                data-bs-toggle="offcanvas"
-                aria-controls="offcanvasLeft"
-                onClick={() => {}}
-                className="box-icon bg_white compare btn-icon-action"
-              >
-                <span className={`icon icon-compare`} />
-                <span className="tooltip">Add to Compare</span>
-                <span className="icon icon-check" />
-              </a>
-              <a
-                href="#quick_view"
-                onClick={() => {}}
-                data-bs-toggle="modal"
-                className="box-icon bg_white quickview tf-btn-loading"
-              >
-                <span className="icon icon-view" />
-                <span className="tooltip">Quick View</span>
               </a>
             </div>
           </div>
@@ -296,7 +319,77 @@ export const ProductCard = ({ product, gridItems }) => {
             </div>
           </div>
         </div>
+      ) : (
+        <div
+          className="card-product style-skincare"
+          style={{
+            position: "relative",
+            border: "1px solid gainsboro",
+          }}
+        >
+          <div className="card-product-wrapper">
+            <a
+              className="product-img"
+              ref={divRef}
+              style={{ maxHeight: width, minHeight: width }}
+            >
+              {/* <Image
+            className="lazyload img-product"
+            data-src={product.pictures[0]}
+            alt="image-product"
+            src={product.pictures[0]}
+            width={360}
+            height={384}
+          /> */}
+              <Skeleton className="lazyload img-product" />
+            </a>
+          </div>
+          <div
+            className="card-product-info text-center"
+            style={{
+              padding: 10,
+              paddingBottom: 5,
+            }}
+          >
+            <Skeleton
+              className="title link"
+              style={{
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                maxWidth: "100%",
+                textAlign: "left",
+                minHeight: "2.4em", // Minimum height to account for 2 lines
+                lineHeight: "1.2em",
+                fontWeight: "bold",
+                color: "#555",
+              }}
+            />
+
+            <Skeleton
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "space-between",
+                padding: 5,
+              }}
+            />
+          </div>
+        </div>
       )}
     </>
   );
 };
+
+const mapStateToProps = (state) => {
+  return {
+    wishlist: state.wishlist.wishlist,
+    currentUser: state.users.currentUser,
+  };
+};
+export default connect(mapStateToProps, {
+  addToWishlistRedux,
+  removeFromWishlistRedux,
+})(ProductCard);

@@ -46,7 +46,7 @@ const Collections = ({ getAllBrandsRedux, brands }) => {
               key={index}
             >
               <Link
-                href={`/shop-collection-sub`}
+                href={`/shop-default?brandId=${brand.id}&brandName=${brand.name}`}
                 className="collection-image img-style"
                 style={{
                   border: "3px solid #b89b00",
@@ -62,7 +62,10 @@ const Collections = ({ getAllBrandsRedux, brands }) => {
                 />
               </Link>
               <div className="collection-content text-center">
-                <Link href={`/shop-collection-sub`} className="link title fw-6">
+                <Link
+                  href={`/shop-default?brandId=${brand.id}&brandName=${brand.name}`}
+                  className="link title fw-6"
+                >
                   {brand.name}
                 </Link>
               </div>

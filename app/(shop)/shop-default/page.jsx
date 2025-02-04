@@ -6,7 +6,7 @@ import {
   getAllCategories,
   getAllLatestProducts,
 } from "@/firebase/firebase.utils";
-
+import Subcollections from "@/components/shop/Subcollections";
 export const metadata = {
   title: "Shop || CloudShopBD",
   description: "Your most trusted online shop",
@@ -14,6 +14,8 @@ export const metadata = {
 export default async function page({ searchParams }) {
   const categoryId = searchParams.categoryId;
   const searchParam = searchParams.searchParam;
+  const brandId = searchParams.brandId;
+  const brandName = searchParams.brandName;
   let categories = [];
   let category = null;
   let results = [];
@@ -53,30 +55,40 @@ export default async function page({ searchParams }) {
   return (
     <>
       <Header2 />
-      {/* <div className="tf-page-title" style={{ padding: 25 }}>
+      <div className="tf-page-title" style={{ padding: 25 }}>
         <div className="container-full">
           <div className="heading text-center">
-            {searchParam
+            {brandName
+              ? brandName
+              : searchParam
               ? `${searchParam}`
               : categoryId === "latest"
               ? "New Arrival"
-              : category.name}
+              : categoryId
+              ? category.name
+              : "All Products"}
           </div>
           <p className="text-center text-2 text_black-2 mt_5">
-            {searchParam
+            {brandName
+              ? `Showing all results for ${brandName}`
+              : searchParam
               ? `Search result for ${searchParam}`
               : categoryId === "latest"
-              ? "Shop through our latest selection of Fashion"
-              : ""}
+              ? "Shop through our latest selection of products"
+              : "Browse all the Products you desired for"}
           </p>
         </div>
-      </div> */}
+      </div>
+      {/* categories er subcategory dekhanor jonno eta dekhabo  */}
+      {/* {results && results.length > 0 && <Subcollections />} */}
       <ShopDefault
         categories={categories}
         category={category}
         categoryId={categoryId}
         searchParam={searchParam}
         results={results}
+        brandId={brandId}
+        brandName={brandName}
       />
       <Footer1 />
     </>

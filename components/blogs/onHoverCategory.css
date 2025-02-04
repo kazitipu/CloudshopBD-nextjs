@@ -1,0 +1,6 @@
+.each-cat-container:hover {
+  background-color: #e0f8ff;
+}
+.cat-name:hover {
+  color: #ec345b !important;
+}

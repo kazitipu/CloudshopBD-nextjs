@@ -423,6 +423,18 @@ const ShopCart = ({
                           <div className="col-12 fs-18">
                             Your shopping cart is empty
                           </div>
+                          <div
+                            className="col-12 fs-18"
+                            style={{ marginTop: 20 }}
+                          >
+                            <Link
+                              href={`/shop-default`}
+                              className="tf-btn btn-fill animate-hover-btn radius-3 w-100 justify-content-center"
+                              style={{ width: "fit-content" }}
+                            >
+                              Explore Products!
+                            </Link>
+                          </div>
                         </div>
                       </div>
                     )}

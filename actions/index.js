@@ -74,6 +74,7 @@ import {
   getSingleAnnouncement,
   getAllScreenShot,
   getSimilarCategoryProducts,
+  getSingleBrandProducts,
 } from "../firebase/firebase.utils";
 
 export const setAllOrders = (ordersArray) => ({
@@ -170,10 +171,7 @@ export const deleteProductRedux = (id) => async (dispatch) => {
   await deleteProduct(id);
   dispatch({ type: "DELETE_PRODUCT", payload: id });
 };
-export const getAllProductsRedux = () => async (dispatch) => {
-  const allProducts = await getAllProducts();
-  dispatch({ type: "GET_ALL_PRODUCTS", payload: allProducts });
-};
+
 export const getSingleProductRedux = (id) => async (dispatch) => {
   const product = await getSingleProduct(id);
   dispatch({ type: "GET_SINGLE_PRODUCT", payload: product });
@@ -414,6 +412,15 @@ export const addToCartRedux2 = (cartObj) => async (dispatch) => {
     payload: cartData,
   });
 };
+
+export const getAllProductsRedux = (pageNo) => async (dispatch) => {
+  const allProducts = await getAllProducts(pageNo);
+  dispatch({ type: "GET_ALL_PRODUCTS", payload: allProducts });
+};
+export const clearAllProductsRedux = () => async (dispatch) => {
+  dispatch({ type: "GET_ALL_PRODUCTS", payload: [] });
+};
+
 export const setCartRedux = (cartData) => async (dispatch) => {
   // for loacl storage saving and data retreving
   dispatch({
@@ -459,6 +466,15 @@ export const getAllBrandsRedux = () => async (dispatch) => {
     payload: allBrands,
   });
 };
+
+export const getSingleBrandProductsRedux =
+  (brand, startAfter) => async (dispatch) => {
+    const allProducts = await getSingleBrandProducts(brand, startAfter);
+    dispatch({
+      type: "GET_ALL_PRODUCTS",
+      payload: allProducts,
+    });
+  };
 
 export const uploadBrandRedux = (brandObj) => async (dispatch) => {
   const uploadedBrandObj = await uploadBrand(brandObj);

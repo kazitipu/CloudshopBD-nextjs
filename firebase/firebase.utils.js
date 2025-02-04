@@ -11,7 +11,7 @@ import {
   getDocs,
   orderBy,
   limit,
-  startAfter as startAfterFn,
+  startAfter,
   updateDoc,
 } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
@@ -424,17 +424,56 @@ export const uploadAliProduct = async (productObj) => {
   }
 };
 
-export const getAllProducts = async () => {
-  const productsCollectionRef = firestore.collection("products");
+let lastVisible = null; // Stores last document for pagination
+const cache = {}; // Cache results for efficiency
+
+export const getAllProducts = async (pageNo) => {
+  console.log(`Fetching page: ${pageNo}`);
+  const productsPerPage = 50;
+  let productsArray = [];
+
+  // Check cache first
+  if (cache[pageNo]) {
+    console.log("Returning from cache");
+    return cache[pageNo];
+  }
+
   try {
-    const products = await productsCollectionRef.get();
-    const productsArray = [];
-    products.forEach((doc) => {
-      productsArray.push(doc.data());
-    });
-    return productsArray;
+    // Create Firestore query
+    let productQuery = query(
+      collection(firestore, "products"),
+      orderBy("name"),
+      limit(productsPerPage)
+    );
+
+    // Apply pagination if it's not the first page
+    if (pageNo > 1 && lastVisible) {
+      productQuery = query(productQuery, startAfter(lastVisible));
+    }
+
+    // Fetch products
+    const productsSnapshot = await getDocs(productQuery);
+
+    // If there are products, process them
+    if (!productsSnapshot.empty) {
+      lastVisible = productsSnapshot.docs[productsSnapshot.docs.length - 1]; // Update lastVisible
+
+      productsArray = productsSnapshot.docs.map((doc) => doc.data()); // Convert to array
+
+      // Cache the result for this page
+      cache[pageNo] = productsArray;
+
+      console.log(
+        `Fetched ${productsArray.length} products for page ${pageNo}`
+      );
+      return productsArray;
+    } else {
+      console.log("No products found");
+      return [];
+    }
   } catch (error) {
-    alert(error);
+    console.error("Error fetching products:", error);
+    alert("Failed to fetch products. Please try again.");
   }
 };
 export const getAllReviews = async () => {
@@ -692,6 +731,26 @@ export const getSimilarCategoryProducts = async (categories) => {
   } catch (error) {
     console.error("Error fetching products:", error);
     return []; // Return an empty array in case of an error
+  }
+};
+
+export const getSingleBrandProducts = async (brandId) => {
+  console.log(brandId);
+  try {
+    // Define the base query
+    let productsQuery = query(
+      collection(firestore, "products"),
+      where("checkedValues2", "array-contains", brandId)
+    );
+    // Fetch products
+    const querySnapshot = await getDocs(productsQuery);
+    // Convert documents to array
+    const productsArray = querySnapshot.docs.map((doc) => doc.data());
+    console.log(productsArray);
+    return productsArray;
+  } catch (error) {
+    console.error("Error fetching brand products:", error);
+    throw new Error("Failed to fetch brand products.");
   }
 };
 
@@ -1793,15 +1852,13 @@ export const getSingleCategoryProducts = async (categories, startAfter) => {
       productsCollectionRef,
       where("checkedValues", "array-contains-any", categories),
       orderBy("id", "desc"),
-      startAfter(startAfter),
-      limit(20)
+      startAfter(startAfter)
     );
   } else {
     productsQuery = query(
       productsCollectionRef,
       where("checkedValues", "array-contains-any", categories),
-      orderBy("id", "desc"),
-      limit(20)
+      orderBy("id", "desc")
     );
   }
   const querySnapshot = await getDocs(productsQuery);
@@ -2314,7 +2371,7 @@ export const getAllLatestProducts = async (startAfter) => {
         productsCollectionRef,
         where("new", "==", true),
         orderBy("id", "desc"),
-        startAfterFn(startAfter),
+        startAfter(startAfter),
         limit(15)
       );
     } else {

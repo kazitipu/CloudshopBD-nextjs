@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { products1 } from "@/data/products";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { ProductCard } from "../shopCards/ProductCard";
+import ProductCard from "../shopCards/ProductCard";
 import { Navigation, Pagination } from "swiper/modules";
 import { connect } from "react-redux";
 import {
