@@ -178,11 +178,23 @@ const OrderDetails = ({
               </div>
             </div>
             <div className="item">
-              <div className="text-2 text_black-2">Delivery</div>
+              <div className="text-2 text_black-2">Payment Status</div>
               <div
                 className="text-2 mt_4 fw-6"
                 style={{
-                  backgroundColor: "cadetblue",
+                  background: order
+                    ? order.paymentStatus == "Partially Paid"
+                      ? "darkorange"
+                      : order.paymentStatus == "Not Paid"
+                      ? "red"
+                      : order.paymentStatus == "Paid"
+                      ? "green"
+                      : order.paymentStatus == "purchaseLater"
+                      ? "gray"
+                      : order.paymentStatus == "pending"
+                      ? "darkorange"
+                      : "red"
+                    : "red",
                   color: "white",
                   display: "inline",
                   padding: 2,
@@ -190,10 +202,10 @@ const OrderDetails = ({
                   paddingRight: 5,
                   fontWeight: "lighter",
                   fontSize: 12,
-                  borderRadius: 2,
+                  borderRadius: 5,
                 }}
               >
-                Regular delivery
+                {(order && order.paymentStatus) || "Not Paid"}
               </div>
             </div>
             <div className="item">

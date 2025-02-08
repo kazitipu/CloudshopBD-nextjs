@@ -1776,28 +1776,46 @@ export const getAllTopCategories = async () => {
     alert(error.message);
   }
 };
-export const getAllHomeScreenProducts = async (categoryId) => {
-  const productsCollectionRef = collection(firestore, "products");
-  const homePageQuery = query(
-    productsCollectionRef,
-    where("checkedValues", "array-contains", categoryId),
-    orderBy("id", "desc"),
-    limit(10)
-  );
+// export const getAllHomeScreenProducts = async (categoryId) => {
+//   const productsCollectionRef = collection(firestore, "homeProducts");
+//   const homePageQuery = query(
+//     productsCollectionRef,
+//     where("categoryId", "==", categoryId),
+//     limit(10)
+//   );
+
+//   try {
+//     // Get documents matching the query
+//     const querySnapshot = await getDocs(homePageQuery);
+//     const productsArray = [];
+//     querySnapshot.forEach((doc) => {
+//       productsArray.push(doc.data());
+//     });
+//     console.log(productsArray);
+//     return productsArray;
+//   } catch (error) {
+//     alert(error.message);
+//   }
+// };
+
+export const getAllHomeScreenProducts = async () => {
+  const productsCollectionRef = collection(firestore, "homeProducts");
 
   try {
-    // Get documents matching the query
-    const querySnapshot = await getDocs(homePageQuery);
-    const productsArray = [];
-    querySnapshot.forEach((doc) => {
-      productsArray.push(doc.data());
-    });
+    // Fetch all documents from "homeProducts"
+    const querySnapshot = await getDocs(productsCollectionRef);
+
+    // Convert snapshot to an array
+    const productsArray = querySnapshot.docs.map((doc) => doc.data());
+
     console.log(productsArray);
     return productsArray;
   } catch (error) {
-    alert(error.message);
+    console.error("Error fetching home screen products:", error);
+    throw new Error("Failed to fetch home screen products.");
   }
 };
+
 export const getAllHomeScreenBestSelling = async (categoryId) => {
   const productsCollectionRef = collection(firestore, "products");
   const homePageQuery = query(

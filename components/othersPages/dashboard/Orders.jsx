@@ -25,6 +25,7 @@ const Orders = ({ getAllOrdersRedux, currentUser, guest, orders }) => {
                 <th className="fw-6">Date</th>
                 <th className="fw-6">Status</th>
                 <th className="fw-6">Total</th>
+                <th className="fw-6">Payment Status</th>
                 <th className="fw-6">Actions</th>
               </tr>
             </thead>
@@ -66,6 +67,35 @@ const Orders = ({ getAllOrdersRedux, currentUser, guest, orders }) => {
                       order.deliveryCharge -
                       order.discountApplied -
                       (order.couponApplied ? order.couponApplied.discount : 0)}
+                  </td>
+                  <td>
+                    <div
+                      style={{
+                        background: order
+                          ? order.paymentStatus == "Partially Paid"
+                            ? "darkorange"
+                            : order.paymentStatus == "Not Paid"
+                            ? "red"
+                            : order.paymentStatus == "Paid"
+                            ? "green"
+                            : order.paymentStatus == "purchaseLater"
+                            ? "gray"
+                            : order.paymentStatus == "pending"
+                            ? "darkorange"
+                            : "red"
+                          : "red",
+                        padding: 5,
+                        paddingTop: 2,
+                        paddingBottom: 2,
+                        fontSize: 12,
+                        borderRadius: 5,
+                        color: "white",
+                        alignSelf: "flex-start",
+                        display: "inline",
+                      }}
+                    >
+                      {(order && order.paymentStatus) || "Not Paid"}
+                    </div>
                   </td>
                   <td>
                     <Link

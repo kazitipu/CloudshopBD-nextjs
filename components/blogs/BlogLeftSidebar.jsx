@@ -50,7 +50,9 @@ const BlogLeftSidebar = ({
       await getAllTopCategoriesRedux();
       await getAllCampaignsRedux();
       await getAllHomeScreenCategoriesRedux();
-      await getAllLatestProductsRedux();
+      setTimeout(async () => {
+        await getAllLatestProductsRedux();
+      }, 1000);
     };
     fetchData();
   }, []);
@@ -58,12 +60,16 @@ const BlogLeftSidebar = ({
     const fetchProducts = async () => {
       if (homeCategories && homeCategories.length > 0) {
         console.time("homeProducts");
+        const products = await getAllHomeScreenProducts();
         let homeProducts = await Promise.all(
           homeCategories.map(async (category) => {
-            const products = await getAllHomeScreenProducts(category.id);
-            return { categoryId: category.id, products };
+            const products2 = products.filter(
+              (product) => product.categoryId == category.id
+            );
+            return { categoryId: category.id, products: products2 };
           })
         );
+
         console.timeEnd("homeProducts"); // End the timer and log the time taken
         setHomeProducts(homeProducts);
       }
