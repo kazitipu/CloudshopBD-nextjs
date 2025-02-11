@@ -26,11 +26,11 @@ export default function ToolbarBottom() {
           <div className="toolbar-icon">
             <i className="icon-search" />
           </div>
-          <div className="toolbar-label">Search</div>
+          <div className="toolbar-label">Explore</div>
         </a>
       </div>
       <div className="toolbar-item">
-        <a href="#login" data-bs-toggle="modal">
+        <a href="#userProfile" data-bs-toggle="modal">
           <div className="toolbar-icon">
             <i className="icon-account" />
           </div>
