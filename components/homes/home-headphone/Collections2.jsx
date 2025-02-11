@@ -7,6 +7,8 @@ import Image from "next/image";
 import Link from "next/link";
 
 const Collections2 = ({ campaigns }) => {
+  console.log(campaigns);
+
   return (
     <section>
       <div className="container" style={{ paddingRight: 0, paddingLeft: 0 }}>
@@ -27,7 +29,7 @@ const Collections2 = ({ campaigns }) => {
               <div className="collection-item-v4 lg hover-img">
                 <div className="collection-inner">
                   <Link
-                    href={`/shop-collection-sub`}
+                    href={`/shop-default?campaignId=${campaign.id}&campaignName=${campaign.name}`}
                     className="radius-20 collection-image img-style"
                   >
                     <Image
@@ -49,7 +51,7 @@ const Collections2 = ({ campaigns }) => {
                       {campaign.categoryId}
                     </h5>
                     <Link
-                      href={`/shop-collection-sub`}
+                      href={`/shop-default?campaignId=${campaign.id}&campaignName=${campaign.name}`}
                       className="rounded-full tf-btn style-3 fw-6 btn-light-icon animate-hover-btn"
                     >
                       <span>Shop now</span>

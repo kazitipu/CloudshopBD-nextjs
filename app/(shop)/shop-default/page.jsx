@@ -16,6 +16,8 @@ export default async function page({ searchParams }) {
   const searchParam = searchParams.searchParam;
   const brandId = searchParams.brandId;
   const brandName = searchParams.brandName;
+  const campaignId = searchParams.campaignId;
+  const campaignName = searchParams.campaignName;
   let categories = [];
   let category = null;
   let results = [];
@@ -58,7 +60,9 @@ export default async function page({ searchParams }) {
       <div className="tf-page-title" style={{ padding: 25 }}>
         <div className="container-full">
           <div className="heading text-center">
-            {brandName
+            {campaignName
+              ? campaignName
+              : brandName
               ? brandName
               : searchParam
               ? `${searchParam}`
@@ -69,7 +73,9 @@ export default async function page({ searchParams }) {
               : "All Products"}
           </div>
           <p className="text-center text-2 text_black-2 mt_5">
-            {brandName
+            {campaignName
+              ? ""
+              : brandName
               ? `Showing all results for ${brandName}`
               : searchParam
               ? `Search result for ${searchParam}`
@@ -89,6 +95,8 @@ export default async function page({ searchParams }) {
         results={results}
         brandId={brandId}
         brandName={brandName}
+        campaignId={campaignId}
+        campaignName={campaignName}
       />
       <Footer1 />
     </>

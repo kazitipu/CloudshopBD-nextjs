@@ -12,6 +12,7 @@ import {
   getAllProductsRedux,
   getSingleBrandProductsRedux,
   clearAllProductsRedux,
+  getSingleCampaignProductsRedux,
 } from "@/actions";
 import { algoliasearch } from "algoliasearch";
 import { fetchAllProducts } from "@/firebase/firebase.utils";
@@ -24,6 +25,7 @@ export const searchClient = algoliasearch(
 const ShopDefault = ({
   getAllLatestProductsRedux,
   getSingleBrandProductsRedux,
+  getSingleCampaignProductsRedux,
   latestProducts,
   categoryId,
   category,
@@ -34,6 +36,8 @@ const ShopDefault = ({
   getAllProductsRedux,
   brandId,
   brandName,
+  campaignId,
+  campaignName,
   clearAllProductsRedux,
 }) => {
   const [gridItems, setGridItems] = useState(6);
@@ -47,7 +51,10 @@ const ShopDefault = ({
   useEffect(() => {
     const fetchData = async () => {
       setLoader(true);
-      if (brandId) {
+      if (campaignId) {
+        setAlgolia(false);
+        getSingleCampaignProductsRedux(campaignId);
+      } else if (brandId) {
         setAlgolia(false);
         getSingleBrandProductsRedux(brandId);
       } else if (searchParam) {
@@ -148,7 +155,9 @@ const ShopDefault = ({
                   paddingRight: 5,
                 }}
               >
-                {brandName ? (
+                {campaignName ? (
+                  campaignName
+                ) : brandName ? (
                   brandName
                 ) : searchParam ? (
                   <span style={{ fontWeight: "lighter" }}>
@@ -245,5 +254,6 @@ export default connect(mapStateToProps, {
   getSingleCategoryProductsRedux,
   getAllProductsRedux,
   getSingleBrandProductsRedux,
+  getSingleCampaignProductsRedux,
   clearAllProductsRedux,
 })(ShopDefault);

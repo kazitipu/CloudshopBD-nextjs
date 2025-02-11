@@ -753,6 +753,25 @@ export const getSingleBrandProducts = async (brandId) => {
     throw new Error("Failed to fetch brand products.");
   }
 };
+export const getSingleCampaignProducts = async (brandId) => {
+  console.log(brandId);
+  try {
+    // Define the base query
+    let productsQuery = query(
+      collection(firestore, "products"),
+      where("selectedCampaign", "==", brandId)
+    );
+    // Fetch products
+    const querySnapshot = await getDocs(productsQuery);
+    // Convert documents to array
+    const productsArray = querySnapshot.docs.map((doc) => doc.data());
+    console.log(productsArray);
+    return productsArray;
+  } catch (error) {
+    console.error("Error fetching brand products:", error);
+    throw new Error("Failed to fetch brand products.");
+  }
+};
 
 export const getSingleAnnouncement = async () => {
   const today = new Date();

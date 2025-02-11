@@ -75,6 +75,7 @@ import {
   getAllScreenShot,
   getSimilarCategoryProducts,
   getSingleBrandProducts,
+  getSingleCampaignProducts,
 } from "../firebase/firebase.utils";
 
 export const setAllOrders = (ordersArray) => ({
@@ -470,6 +471,14 @@ export const getAllBrandsRedux = () => async (dispatch) => {
 export const getSingleBrandProductsRedux =
   (brand, startAfter) => async (dispatch) => {
     const allProducts = await getSingleBrandProducts(brand, startAfter);
+    dispatch({
+      type: "GET_ALL_PRODUCTS",
+      payload: allProducts,
+    });
+  };
+export const getSingleCampaignProductsRedux =
+  (campaignId, startAfter) => async (dispatch) => {
+    const allProducts = await getSingleCampaignProducts(campaignId, startAfter);
     dispatch({
       type: "GET_ALL_PRODUCTS",
       payload: allProducts,
