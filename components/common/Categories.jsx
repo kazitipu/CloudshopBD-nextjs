@@ -4,12 +4,13 @@ import React, { useEffect, useRef, useState } from "react";
 import { connect } from "react-redux";
 import { getAllCategoriesRedux } from "@/actions";
 import "./categories.css";
+import { useRouter } from "next/navigation";
 const Accordion = ({ faqs = faqs1, getAllCategoriesRedux, categories }) => {
   const parentRefs = useRef([]);
   const questionRefs = useRef([]);
   const answerRefs = useRef([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-
+  const router = useRouter();
   useEffect(() => {
     const fetchData = async () => {
       await getAllCategoriesRedux();
@@ -70,7 +71,13 @@ const Accordion = ({ faqs = faqs1, getAllCategoriesRedux, categories }) => {
         {cat &&
           cat.length > 0 &&
           cat.map((category, index) => (
-            <div className="grid-item" key={index}>
+            <div
+              className="grid-item"
+              key={index}
+              onClick={() => {
+                router.push(`/shop-default?categoryId=${category.id}`);
+              }}
+            >
               <div
                 style={{
                   minHeight: 80,
@@ -102,6 +109,7 @@ const Accordion = ({ faqs = faqs1, getAllCategoriesRedux, categories }) => {
       </div>
     );
   };
+
   return (
     <>
       {mainCategories.length > 0 &&

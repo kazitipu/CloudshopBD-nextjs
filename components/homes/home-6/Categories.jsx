@@ -58,7 +58,7 @@ const Categories = ({ topCategories }) => {
                 <SwiperSlide key={index}>
                   <div className="collection-item-circle hover-img">
                     <Link
-                      href={`/shop-collection-sub`}
+                      href={`/shop-default?categoryId=${item.id}`}
                       className="collection-image img-style"
                       style={{ border: "3px solid rgb(184, 155, 0)" }}
                     >
@@ -76,12 +76,11 @@ const Categories = ({ topCategories }) => {
                       style={{ marginTop: 10 }}
                     >
                       <Link
-                        href={`/shop-collection-sub`}
+                        href={`/shop-default?categoryId=${item.id}`}
                         className="link title fw-5"
                       >
                         {item.name}
                       </Link>
-                      {/* <div className="count">12 items</div> */}
                     </div>
                   </div>
                 </SwiperSlide>
